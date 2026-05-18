@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Eye } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { Skill } from "@/types";
 import { categoryColor } from "@/lib/skills";
 
@@ -14,21 +14,30 @@ export default function SkillCard({ skill }: SkillCardProps) {
   return (
     <Link
       href={`/skills/${skill.id}`}
-      className="block bg-white border-2 border-gray-200 rounded-lg p-3 hover:shadow-md hover:border-blue-400 transition group"
+      className="flex flex-col bg-white border-2 border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-blue-400 transition group min-h-[200px]"
     >
       <div
-        className={`inline-block px-2 py-0.5 rounded text-xs font-semibold mb-2 ${tagClass}`}
+        className={`inline-block self-start px-2 py-0.5 rounded text-xs font-semibold mb-3 ${tagClass}`}
       >
         {shortCategory}
       </div>
-      <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-2">
+
+      <h3 className="text-sm font-bold text-gray-900 mb-2 line-clamp-2 leading-snug">
         {skill.name}
       </h3>
-      <p className="text-xs text-gray-600 mb-2 line-clamp-2">
-        {skill.primaryUseCase}
+
+      <p className="text-xs text-gray-600 mb-3 line-clamp-3 leading-relaxed flex-1">
+        {skill.description}
       </p>
-      <span className="text-blue-600 group-hover:text-blue-700 font-semibold text-xs flex items-center gap-1">
-        <Eye size={14} /> Details
+
+      {skill.primaryUseCase && (
+        <p className="text-xs text-gray-400 italic mb-3 line-clamp-2">
+          {skill.primaryUseCase}
+        </p>
+      )}
+
+      <span className="mt-auto text-blue-600 group-hover:text-blue-700 font-semibold text-xs flex items-center gap-1">
+        View Details <ArrowRight size={12} />
       </span>
     </Link>
   );

@@ -13,4 +13,12 @@ export interface Skill {
   dependencies: string;
   saasDependencies: string;
   implementabilityNote: string;
+  whenToUse?: string;
+  inputs?: string[];
+  instructions?: string[];
+  toolsAllowed?: string;
+  outputFormat?: string;
+  constraintsList?: string[];
+  failureHandling?: string;
+  skillExamples?: string[];
 }

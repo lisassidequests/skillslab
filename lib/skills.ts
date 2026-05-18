@@ -24,13 +24,23 @@ export function filterSkills(
   return skills.filter((s) => {
     if (categories.length > 0 && !categories.includes(s.category)) return false;
     if (!q) return true;
-    return (
-      s.name.toLowerCase().includes(q) ||
-      s.description.toLowerCase().includes(q) ||
-      s.primaryUseCase.toLowerCase().includes(q) ||
-      s.category.toLowerCase().includes(q) ||
-      s.targetJobRoles.toLowerCase().includes(q)
-    );
+    const haystack = [
+      s.name,
+      s.description,
+      s.primaryUseCase,
+      s.category,
+      s.targetJobRoles,
+      s.whenToUse ?? "",
+      s.outputFormat ?? "",
+      s.failureHandling ?? "",
+      ...(s.inputs ?? []),
+      ...(s.instructions ?? []),
+      ...(s.constraintsList ?? []),
+      ...(s.skillExamples ?? []),
+    ]
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(q);
   });
 }
 

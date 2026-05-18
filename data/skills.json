@@ -4,349 +4,1020 @@
     "name": "Code Review & Standards Checker",
     "category": "Software Engineering",
     "agency": "GovTech",
-    "description": "Reviews pull requests and code commits against GovTech's coding standards, security guidelines, and documentation requirements, flagging deviations before peer review.",
+    "description": "Automate the review of pull requests and code commits against GovTech's coding standards, security guidelines, and documentation requirements — flagging deviations before they reach peer review.",
     "primaryUseCase": "Automate code quality gating",
     "targetJobRoles": "Software Engineers; Engineering Managers; DevSecOps Engineers; Tech Leads",
     "efficiencyGain": "40% faster code review cycle",
     "complexityLevel": "Medium",
     "dependencies": "Version control system (GitHub/GitLab); GovTech coding standards ruleset; CI/CD pipeline",
     "saasDependencies": "GitHub / GitLab (public SaaS); CI/CD tools (GitHub Actions / GitLab CI — open source runners available)",
-    "implementabilityNote": "GitHub and GitLab are both widely available SaaS platforms. GovTech's SHIP-HATS platform is itself built on GitLab, making this directly deployable without proprietary internal system access."
+    "implementabilityNote": "GitHub and GitLab are both widely available SaaS platforms. GovTech's SHIP-HATS platform is itself built on GitLab, making this directly deployable without proprietary internal system access.",
+    "whenToUse": "When a developer submits a pull request or code commit and it needs to be checked against GovTech's coding standards, security guidelines, and documentation requirements prior to peer review.",
+    "inputs": [
+      "Pull request URL or code commit diff",
+      "GovTech coding standards ruleset (reference document or policy link)",
+      "CI/CD pipeline configuration (optional, for integration mode)"
+    ],
+    "instructions": [
+      "Receive the pull request link or diff content from the version control system (GitHub / GitLab).",
+      "Load the GovTech coding standards, security guidelines, and documentation requirements as the reference ruleset.",
+      "Parse the code diff and compare each section against the ruleset, flagging any deviations in naming conventions, security practices, missing documentation, or structural issues.",
+      "Group the flagged issues by severity (critical / warning / info).",
+      "Generate a structured review report listing each finding with the specific standard violated, the affected file and line number, and a recommended fix.",
+      "Return the report to the developer via the CI/CD pipeline or directly in the pull request comments."
+    ],
+    "toolsAllowed": "GitHub / GitLab (SaaS); GitHub Actions / GitLab CI (open-source CI runners); GovTech SHIP-HATS platform",
+    "outputFormat": "Structured code review report (Markdown or inline PR comments) listing findings grouped by severity, with file references, violated standard, and recommended fix per finding.",
+    "constraintsList": [
+      "Must not approve or merge pull requests; flagging only.",
+      "Do not expose or log code contents outside the authorised CI/CD pipeline.",
+      "Standards ruleset must be kept current; outdated rulesets reduce accuracy."
+    ],
+    "failureHandling": "If the standards ruleset cannot be loaded, pause the review and alert the engineering manager. If the version control API is unavailable, retry up to 3 times before logging a failure and notifying the submitting engineer.",
+    "skillExamples": [
+      "Input: PR #142 adding a new API endpoint. Output: Report flagging missing input validation on line 87, non-standard error handling on line 102, and absence of API documentation header.",
+      "Input: Commit updating authentication logic. Output: Report flagging use of deprecated cryptographic function with recommended replacement."
+    ]
   },
   {
     "id": "GT-06",
     "name": "Incident Post-Mortem Synthesiser",
     "category": "Software Engineering",
     "agency": "GovTech",
-    "description": "Aggregates incident logs, timeline events, and remediation notes from multiple sources and auto-generates a structured post-mortem report with root cause analysis and action items.",
+    "description": "Aggregate incident logs, timeline events, and remediation notes from multiple sources and auto-generate a structured post-mortem report with root cause analysis and action items — accelerating post-incident reporting.",
     "primaryUseCase": "Accelerate post-incident reporting",
     "targetJobRoles": "Site Reliability Engineers; Engineering Managers; Cybersecurity Engineers; Operations Officers",
     "efficiencyGain": "50% faster post-mortem documentation",
     "complexityLevel": "Medium",
     "dependencies": "Incident ticketing system; log aggregation platform; Confluence/wiki",
     "saasDependencies": "Confluence (Atlassian SaaS); Jira (Atlassian SaaS); PagerDuty (SaaS incident management); Datadog Logs (SaaS)",
-    "implementabilityNote": "Confluence and Jira are standard SaaS tools widely used in GovTech engineering teams. Log aggregation via Datadog or similar is standard SaaS. None of these dependencies require proprietary government network access."
+    "implementabilityNote": "Confluence and Jira are standard SaaS tools widely used in GovTech engineering teams. Log aggregation via Datadog or similar is standard SaaS. None of these dependencies require proprietary government network access.",
+    "whenToUse": "After a resolved IT or cybersecurity incident, when engineers and operations officers need to produce a structured post-mortem report for management review and continuous improvement.",
+    "inputs": [
+      "Incident ticket data (from Jira / ServiceNow)",
+      "System and application logs covering the incident window (from Datadog or equivalent)",
+      "Incident timeline notes and remediation actions recorded during the incident",
+      "Post-mortem report template"
+    ],
+    "instructions": [
+      "Pull the incident ticket from Jira or ServiceNow using the incident ID, including all comments and status changes.",
+      "Retrieve the relevant log entries from the log aggregation platform (Datadog or equivalent) for the incident time window.",
+      "Merge the ticket data, logs, and any freeform remediation notes into a unified incident timeline, ordered chronologically.",
+      "Identify the root cause by analysing the sequence of events, correlating log anomalies with the timeline.",
+      "Extract all action items mentioned in comments or remediation notes.",
+      "Draft the post-mortem report using the standard template, populating: incident summary, timeline, root cause, impact assessment, and action items with owners and due dates.",
+      "Output the draft to Confluence or the nominated document repository for team review."
+    ],
+    "toolsAllowed": "Jira (Atlassian SaaS); Confluence (Atlassian SaaS); PagerDuty (SaaS); Datadog Logs (SaaS)",
+    "outputFormat": "Structured post-mortem report document (Confluence page or Word/Google Doc) containing: incident summary, chronological timeline, root cause analysis, impact statement, and a numbered action items table with owner and target date.",
+    "constraintsList": [
+      "Do not include personally identifiable information of users affected unless explicitly required by the report template.",
+      "Root cause must be clearly stated as a hypothesis if insufficient log data is available — do not fabricate certainty.",
+      "Report must be reviewed and approved by a human engineer before distribution."
+    ],
+    "failureHandling": "If logs for the incident window are unavailable, flag the gap clearly in the timeline section and request manual log input from the engineering team. If Jira/Confluence APIs are unreachable, save the draft locally and notify the team.",
+    "skillExamples": [
+      "Input: Jira incident INC-4821, Datadog logs 14:00–16:30, remediation notes from SRE team. Output: Post-mortem report identifying a misconfigured load balancer as root cause, with 5 action items assigned to the SRE and DevOps leads."
+    ]
   },
   {
     "id": "GT-07",
     "name": "User Research Insight Synthesiser",
     "category": "UX & Design",
     "agency": "GovTech",
-    "description": "Transcribes and synthesises findings from multiple user research sessions, usability tests, and feedback surveys into a prioritised insight report with design recommendations.",
+    "description": "Transcribe and synthesise findings from multiple user research sessions, usability tests, and feedback surveys into a prioritised insight report with design recommendations — accelerating UX insight reporting.",
     "primaryUseCase": "Synthesise user research faster",
     "targetJobRoles": "UX Designers; UX Researchers; Product Managers; Service Designers",
     "efficiencyGain": "55% faster insight reporting",
     "complexityLevel": "Medium",
     "dependencies": "Research session recordings; survey tools (FormSG); transcription API; NLP analysis",
     "saasDependencies": "FormSG (open-source, publicly available); Zoom / Google Meet recordings (SaaS); Otter.ai / Assembly AI transcription API (SaaS); Dovetail or Notion (SaaS for synthesis)",
-    "implementabilityNote": "FormSG is an open-source Singapore government tool available publicly. Transcription and NLP analysis rely on open SaaS APIs. Recordings are typically stored in standard cloud drives accessible without internal-only network."
+    "implementabilityNote": "FormSG is an open-source Singapore government tool available publicly. Transcription and NLP analysis rely on open SaaS APIs. Recordings are typically stored in standard cloud drives accessible without internal-only network.",
+    "whenToUse": "After completing a round of user research sessions, usability tests, or feedback surveys, when the team needs to consolidate findings into a clear report with prioritised recommendations for design or product decisions.",
+    "inputs": [
+      "Recorded research session files (audio/video) or existing transcripts",
+      "Survey responses exported from FormSG or equivalent",
+      "Research goals and evaluation criteria defined by the UX team"
+    ],
+    "instructions": [
+      "Transcribe any audio or video recordings using the transcription API (Otter.ai / AssemblyAI / Whisper).",
+      "Compile all transcripts and survey responses into a single working dataset.",
+      "Read through the dataset and tag recurring themes, pain points, and positive observations using a standard taxonomy (e.g. usability, comprehension, trust, task completion).",
+      "Cluster tagged items by theme and count frequency across participants.",
+      "Rank insights by frequency and severity of user impact.",
+      "Draft design recommendations aligned to the top-ranked insights, referencing specific participant quotes as evidence (anonymised if required).",
+      "Produce the prioritised insight report using the standard UX report template."
+    ],
+    "toolsAllowed": "FormSG (open-source); Zoom / Google Meet (SaaS, for recordings); Otter.ai / AssemblyAI / OpenAI Whisper (SaaS / open-source transcription); Dovetail / Notion (SaaS for synthesis)",
+    "outputFormat": "Prioritised UX insight report (PDF or Notion/Confluence page) containing: executive summary, top insights ranked by priority, supporting quotes per insight, and a recommendations table with suggested design actions.",
+    "constraintsList": [
+      "Anonymise participant quotes unless explicit consent for attribution was obtained.",
+      "Do not infer findings not evidenced by the data — flag where sample sizes are too small to be conclusive.",
+      "Recommendations must be framed as suggestions for the design team, not directives."
+    ],
+    "failureHandling": "If transcription fails for a recording, flag the file and request manual transcript input before proceeding. If survey data export is incomplete, note the gap in the report's methodology section.",
+    "skillExamples": [
+      "Input: 8 usability test recordings + 120 FormSG survey responses on a government digital service. Output: Report identifying 4 prioritised insights (navigation confusion, terminology unfamiliarity, trust gap on data sharing, mobile layout issues) with 6 design recommendations."
+    ]
   },
   {
     "id": "GT-08",
     "name": "Design System Compliance Checker",
     "category": "UX & Design",
     "agency": "GovTech",
-    "description": "Scans Figma files or exported UI components against GovTech's Design System specifications, flagging non-compliant components, colour mismatches, or accessibility failures.",
+    "description": "Scan Figma files or exported UI components against GovTech's Design System specifications, flagging non-compliant components, colour mismatches, or accessibility failures — enforcing design consistency at scale.",
     "primaryUseCase": "Enforce design consistency at scale",
     "targetJobRoles": "UX Designers; Frontend Engineers; Design Managers; Product Managers",
     "efficiencyGain": "45% reduction in design review time",
     "complexityLevel": "Medium",
     "dependencies": "Figma API; GovTech Design System tokens; WCAG 2.1 ruleset",
     "saasDependencies": "Figma (SaaS, publicly accessible API); WCAG 2.1 (open standard); GovTech Design System (open-source on GitHub)",
-    "implementabilityNote": "Figma is a standard SaaS product with a public API. GovTech's Design System is publicly open-sourced on GitHub (design.gov.sg). WCAG is an open W3C standard. No government-internal systems required."
+    "implementabilityNote": "Figma is a standard SaaS product with a public API. GovTech's Design System is publicly open-sourced on GitHub (design.gov.sg). WCAG is an open W3C standard. No government-internal systems required.",
+    "whenToUse": "When a designer or frontend engineer submits a new UI design or component for review, and compliance with the GovTech Design System and WCAG 2.1 accessibility standards needs to be verified before development proceeds.",
+    "inputs": [
+      "Figma file URL or exported component files",
+      "GovTech Design System token definitions (from design.gov.sg GitHub repository)",
+      "WCAG 2.1 compliance checklist"
+    ],
+    "instructions": [
+      "Access the Figma file via the Figma API using the provided URL.",
+      "Extract all design tokens used in the file (colours, typography, spacing, component names).",
+      "Load the GovTech Design System token definitions as the reference standard.",
+      "Compare extracted tokens against the Design System reference, flagging any mismatches in colour values, font sizes, spacing units, or component names.",
+      "Run an automated accessibility check against WCAG 2.1 criteria (colour contrast ratios, text sizing, interactive element sizing).",
+      "Compile all findings into a compliance report, categorised as: Design System violations, Accessibility failures, and Advisory notes.",
+      "Return the report to the designer or engineer with specific frame/layer references for each finding."
+    ],
+    "toolsAllowed": "Figma API (SaaS); GovTech Design System (open-source on GitHub, design.gov.sg); WCAG 2.1 (open W3C standard)",
+    "outputFormat": "Compliance report (Markdown or PDF) listing findings categorised by type (Design System violation / Accessibility failure / Advisory), with Figma layer references, description of the issue, and recommended correction.",
+    "constraintsList": [
+      "This skill flags violations for human review — it does not auto-correct designs.",
+      "WCAG 2.1 AA compliance is the minimum standard; AAA is advisory.",
+      "Figma API access requires a valid API token with appropriate permissions."
+    ],
+    "failureHandling": "If the Figma API is unavailable, request the designer to export component specs manually. If the Design System token file cannot be loaded, pause the check and notify the design lead.",
+    "skillExamples": [
+      "Input: Figma file for a new citizen-facing form. Output: Report flagging 3 non-standard button colours, 2 contrast ratio failures (WCAG AA), and 1 non-standard font size."
+    ]
   },
   {
     "id": "GT-09",
     "name": "Citizen Journey Friction Mapper",
     "category": "UX & Design",
     "agency": "GovTech",
-    "description": "Analyses clickstream analytics and drop-off data from government digital services to pinpoint friction points in citizen journeys and generate prioritised improvement recommendations.",
+    "description": "Analyse clickstream analytics and drop-off data from government digital services to pinpoint friction points in citizen journeys and generate prioritised improvement recommendations.",
     "primaryUseCase": "Identify where citizens abandon digital services",
     "targetJobRoles": "UX Designers; Product Managers; Operations Officers; Service Centre Managers",
     "efficiencyGain": "35% improvement in service completion rates",
     "complexityLevel": "Medium",
     "dependencies": "Web analytics platform; user session data; journey mapping templates",
     "saasDependencies": "Google Analytics / Plausible / Mixpanel (SaaS analytics); Hotjar / FullStory (SaaS session recording); Miro / Mural (SaaS journey mapping)",
-    "implementabilityNote": "Web analytics and session recording tools are standard SaaS. Journey mapping tools like Miro are publicly accessible SaaS. No dependency on government-internal data warehouses — works off publicly-accessible web product telemetry."
+    "implementabilityNote": "Web analytics and session recording tools are standard SaaS. Journey mapping tools like Miro are publicly accessible SaaS. No dependency on government-internal data warehouses — works off publicly-accessible web product telemetry.",
+    "whenToUse": "When product managers or UX teams want to understand where citizens are dropping off or struggling in a digital service journey, using existing web analytics data.",
+    "inputs": [
+      "Web analytics data export (from Google Analytics / Plausible / Mixpanel) covering the journey of interest",
+      "Session recording data (from Hotjar / FullStory) for qualitative context (optional)",
+      "Journey map or defined user flow to analyse against"
+    ],
+    "instructions": [
+      "Load the web analytics export and filter to the relevant service journey (entry point to completion).",
+      "Identify pages or steps with the highest drop-off rates and lowest completion rates.",
+      "Map the drop-off points onto the defined user flow to locate friction hotspots.",
+      "If session recording data is available, review representative recordings at the friction hotspots to understand the qualitative behaviour (e.g. rage clicks, repeated scrolling, hesitation).",
+      "Rank friction points by severity using a combination of drop-off volume and qualitative severity.",
+      "For each top friction point, draft an improvement hypothesis (e.g. simplify form field, improve error messaging, add contextual help).",
+      "Produce a friction map report with annotated journey diagram and prioritised recommendations."
+    ],
+    "toolsAllowed": "Google Analytics / Plausible / Mixpanel (SaaS analytics); Hotjar / FullStory (SaaS session recording); Miro / Mural (SaaS journey mapping)",
+    "outputFormat": "Friction map report containing: annotated journey flow diagram with friction hotspots highlighted, ranked list of friction points with supporting data, and a recommendations table with improvement hypothesis per friction point.",
+    "constraintsList": [
+      "All analytics data must be handled in accordance with government data governance and privacy policies.",
+      "Session recordings containing personally identifiable information must be reviewed under appropriate access controls.",
+      "Recommendations are hypotheses for testing — do not present them as confirmed solutions."
+    ],
+    "failureHandling": "If analytics data is unavailable for the target journey, notify the product manager and request manual export. If drop-off data is insufficient (low traffic), note the limitation and recommend qualitative research as a supplement.",
+    "skillExamples": [
+      "Input: Analytics data for a grants application portal over 3 months. Output: Friction map identifying 60% drop-off at the document upload step, with 3 prioritised recommendations including simplifying upload instructions and adding a file size guide."
+    ]
   },
   {
     "id": "GT-10",
     "name": "Sprint Planning & Backlog Prioritiser",
     "category": "Product & Programme Management",
     "agency": "GovTech",
-    "description": "Analyses a product backlog against user impact scores, technical debt, and strategic priorities and suggests an optimised sprint plan with rationale for each prioritisation decision.",
+    "description": "Analyse a product backlog against user impact scores, technical debt, and strategic priorities and suggest an optimised sprint plan with rationale for each prioritisation decision — making sprint planning faster and more structured.",
     "primaryUseCase": "Plan sprints and prioritise backlogs efficiently",
     "targetJobRoles": "Product Managers; Engineering Managers; Programme Managers; Scrum Masters",
     "efficiencyGain": "35% faster sprint planning sessions",
     "complexityLevel": "Medium",
     "dependencies": "Project management tool (Jira/Linear); user feedback repository; OKR tracking system",
     "saasDependencies": "Jira (Atlassian SaaS); Linear (SaaS); Notion (SaaS); Coda (SaaS); Productboard (SaaS); GitHub Issues (SaaS)",
-    "implementabilityNote": "All listed dependencies are standard commercially available SaaS project management tools. No government-network-only systems required. Jira in particular is used across GovTech teams on SHIP-HATS."
+    "implementabilityNote": "All listed dependencies are standard commercially available SaaS project management tools. No government-network-only systems required. Jira in particular is used across GovTech teams on SHIP-HATS.",
+    "whenToUse": "Before a sprint planning session, when the product manager or engineering manager needs to prepare a prioritised backlog and a recommended sprint plan for team discussion.",
+    "inputs": [
+      "Current product backlog export (from Jira / Linear / GitHub Issues)",
+      "User impact scores or priority labels assigned to backlog items",
+      "Technical debt tags or estimates on relevant items",
+      "Current OKRs or strategic priorities for the product (document or brief)"
+    ],
+    "instructions": [
+      "Load the backlog export and parse all open items with their current labels, estimates, and any existing priority scores.",
+      "Load the current OKRs or strategic priorities as the scoring reference.",
+      "Score each backlog item across three dimensions: user impact, strategic alignment, and technical debt urgency.",
+      "Combine scores into a weighted priority ranking (user impact 40%, strategic alignment 40%, technical debt 20% — adjust weights as directed by the team).",
+      "Select the top-ranked items that fit within the team's sprint capacity (in story points or hours).",
+      "Draft the recommended sprint plan listing selected items in priority order with a one-line rationale for each.",
+      "Flag any items excluded from the sprint that have high urgency scores with a note for the team to review."
+    ],
+    "toolsAllowed": "Jira (Atlassian SaaS); Linear (SaaS); GitHub Issues (SaaS); Notion / Coda (SaaS); Productboard (SaaS)",
+    "outputFormat": "Sprint plan document (in the project management tool or a shared doc) listing: recommended sprint items in priority order, estimated total capacity used, rationale per item, and a flagged list of high-urgency items deferred to the next sprint.",
+    "constraintsList": [
+      "Sprint capacity must be provided by the engineering lead — do not estimate team velocity without this input.",
+      "The output is a recommendation for team discussion, not a final plan.",
+      "Weight adjustments to the scoring formula must be approved by the product manager before use."
+    ],
+    "failureHandling": "If the backlog export is missing priority scores or estimates for most items, flag the gap and ask the product manager to label them before proceeding. If the project management API is unavailable, request a manual CSV export.",
+    "skillExamples": [
+      "Input: 47-item backlog, 40 story points sprint capacity, OKR focused on user onboarding. Output: Recommended sprint of 8 items totalling 38 story points, with onboarding flow improvements ranked first and 2 high-urgency items flagged for next sprint."
+    ]
   },
   {
     "id": "GT-11",
     "name": "Stakeholder Update Report Generator",
     "category": "Product & Programme Management",
     "agency": "GovTech",
-    "description": "Aggregates progress data, risks, and milestone statuses from project tools and auto-drafts structured update reports for senior management and agency stakeholders.",
+    "description": "Aggregate progress data, risks, and milestone statuses from project tools and auto-draft structured update reports for senior management and agency stakeholders — reducing reporting preparation time.",
     "primaryUseCase": "Automate weekly/monthly programme updates",
     "targetJobRoles": "Programme Managers; Product Managers; Deputy Directors; Agency CIOs",
     "efficiencyGain": "50% reduction in reporting preparation time",
     "complexityLevel": "Medium",
     "dependencies": "Jira/project tracking API; milestone database; report templates",
     "saasDependencies": "Jira API (Atlassian SaaS); Confluence (SaaS); Google Docs / Microsoft 365 (SaaS); Notion (SaaS)",
-    "implementabilityNote": "Milestone data lives in Jira/Confluence (SaaS). Report output can go to Google Docs or M365 — both SaaS. Report templates are standard document formats with no internal-system dependency."
+    "implementabilityNote": "Milestone data lives in Jira/Confluence (SaaS). Report output can go to Google Docs or M365 — both SaaS. Report templates are standard document formats with no internal-system dependency.",
+    "whenToUse": "When a programme manager or product manager needs to prepare a weekly or monthly status update for senior management or agency stakeholders and wants to draft it efficiently from existing project data.",
+    "inputs": [
+      "Project tracking data (from Jira / Confluence project pages / equivalent)",
+      "Milestone schedule with current status",
+      "Risk register (current issues and risks)",
+      "Report template approved by the programme"
+    ],
+    "instructions": [
+      "Pull the latest milestone statuses and progress data from the project tracking tool via API.",
+      "Load the risk register and identify any risks with elevated status since the last report.",
+      "Retrieve the milestone schedule and calculate which milestones are on track, at risk, or overdue.",
+      "Map the data into the approved report template, completing: executive summary, milestone status table, key achievements since last report, risks and issues, and upcoming milestones.",
+      "Draft the executive summary in concise, plain language suitable for senior management (no technical jargon).",
+      "Highlight any items requiring a decision or escalation from leadership in a dedicated section.",
+      "Output the draft report to Google Docs / Microsoft 365 / Confluence for review by the programme manager."
+    ],
+    "toolsAllowed": "Jira API (Atlassian SaaS); Confluence (SaaS); Google Docs / Microsoft 365 (SaaS); Notion (SaaS)",
+    "outputFormat": "Structured stakeholder update report (Google Doc / Word / Confluence page) containing: executive summary, milestone status table (RAG-rated), key achievements, risks and issues summary, decisions required, and upcoming milestones.",
+    "constraintsList": [
+      "The draft must be reviewed and edited by the programme manager before distribution to stakeholders.",
+      "Do not include classified or commercially sensitive information unless the document access controls are set appropriately.",
+      "RAG status (Red/Amber/Green) for milestones must be validated by the programme manager before the report is sent."
+    ],
+    "failureHandling": "If the project tracking API is unavailable, request a manual data export and proceed from the file. If the risk register is not accessible, flag the gap and ask the programme manager to provide a current risk summary.",
+    "skillExamples": [
+      "Input: Jira project board for a citizen service platform, monthly report template, Q2 milestone schedule. Output: Draft monthly report with 3 milestones green, 1 amber (delayed by vendor dependency), 2 risks escalated, and 1 decision requested on scope change."
+    ]
   },
   {
     "id": "GT-13",
     "name": "Threat Intelligence Digest",
     "category": "Cybersecurity",
     "agency": "GovTech",
-    "description": "Aggregates and summarises the latest threat intelligence feeds, CVE disclosures, and Singapore-specific threat advisories from CSA into a concise daily digest with prioritised action items.",
+    "description": "Aggregate and summarise the latest threat intelligence feeds, CVE disclosures, and Singapore-specific threat advisories from CSA into a concise daily digest with prioritised action items.",
     "primaryUseCase": "Stay ahead of emerging cyber threats",
     "targetJobRoles": "Cybersecurity Engineers; Security Operations Centre Analysts; IT Compliance Officers; CISOs",
     "efficiencyGain": "60% faster threat intelligence consumption",
     "complexityLevel": "High",
     "dependencies": "Threat intelligence feeds (STIX/TAXII); CSA advisory API; MITRE ATT&CK framework",
     "saasDependencies": "MITRE ATT&CK (open-source framework); NVD CVE database (open, US NIST); STIX/TAXII feeds (open standard); CSA SingCERT advisories (publicly published); VirusTotal API (freemium SaaS); AlienVault OTX (free SaaS)",
-    "implementabilityNote": "The core intelligence sources — CVE/NVD, MITRE ATT&CK, SingCERT public advisories, STIX/TAXII — are all publicly available open standards or open-access feeds. No classified or internal-only government network required for the digest layer."
+    "implementabilityNote": "The core intelligence sources — CVE/NVD, MITRE ATT&CK, SingCERT public advisories, STIX/TAXII — are all publicly available open standards or open-access feeds. No classified or internal-only government network required for the digest layer.",
+    "whenToUse": "Daily, when cybersecurity engineers, SOC analysts, or CISOs need a rapid briefing on emerging threats relevant to their environment without manually scanning multiple intelligence sources.",
+    "inputs": [
+      "Threat intelligence feeds (STIX/TAXII format or RSS)",
+      "NVD CVE database (daily feed)",
+      "CSA SingCERT advisories (public feed)",
+      "MITRE ATT&CK framework (as classification reference)",
+      "Asset inventory or technology stack list (to filter relevant threats)"
+    ],
+    "instructions": [
+      "Pull the latest entries from configured STIX/TAXII feeds, NVD CVE database, and CSA SingCERT public advisories.",
+      "Filter entries to those relevant to the organisation's technology stack using the asset inventory.",
+      "Deduplicate entries that appear across multiple feeds.",
+      "Classify each entry using the MITRE ATT&CK framework (tactic and technique).",
+      "Score each entry for urgency using CVSS base score and EPSS exploit prediction score.",
+      "Rank entries by urgency score and select the top items for the digest.",
+      "Draft the daily digest with a one-paragraph executive summary, followed by ranked threat entries with: threat name, source, CVSS/EPSS scores, ATT&CK classification, affected systems, and recommended action.",
+      "Distribute the digest via the configured channel (email, Slack, or collaboration platform)."
+    ],
+    "toolsAllowed": "MITRE ATT&CK (open-source); NVD CVE database (open, NIST); STIX/TAXII feeds (open standard); CSA SingCERT advisories (public); VirusTotal API (freemium SaaS); AlienVault OTX (free SaaS)",
+    "outputFormat": "Daily threat digest (PDF, email, or Slack message) containing: executive summary paragraph, ranked threat entries with name, source, scores, ATT&CK classification, affected systems, and recommended action per entry.",
+    "constraintsList": [
+      "The digest is for situational awareness — recommended actions must be reviewed by a qualified cybersecurity engineer before implementation.",
+      "CVSS and EPSS scores are reference inputs; human judgement on organisational context is required for final prioritisation.",
+      "Do not include classified threat intelligence in channels without appropriate access controls."
+    ],
+    "failureHandling": "If a feed is unavailable, note the gap in the digest header and proceed with available sources. If the CVSS score is missing for a CVE, flag the entry as unscored and include it with a manual review note.",
+    "skillExamples": [
+      "Input: Daily feeds on 15 May, asset inventory including Apache, Kubernetes, and PostgreSQL. Output: Digest with 3 high-urgency entries (critical Apache CVE, active ransomware campaign targeting K8s, CSA advisory on supply chain threat) with prioritised recommended actions."
+    ]
   },
   {
     "id": "GT-14",
     "name": "Vulnerability Triage Ranker",
     "category": "Cybersecurity",
     "agency": "GovTech",
-    "description": "Scores and ranks open vulnerability findings from penetration test reports or scanner outputs against asset criticality and exploit likelihood to prioritise remediation order.",
+    "description": "Score and rank open vulnerability findings from penetration test reports or scanner outputs against asset criticality and exploit likelihood to prioritise remediation order — making vulnerability management more effective.",
     "primaryUseCase": "Prioritise vulnerability remediation effectively",
     "targetJobRoles": "Cybersecurity Engineers; DevSecOps Engineers; IT Compliance Officers; Security Leads",
     "efficiencyGain": "50% faster vulnerability triage",
     "complexityLevel": "High",
     "dependencies": "Vulnerability scanner output; asset inventory; CVSS scoring; exploitability database",
     "saasDependencies": "CVSS scoring (open NIST standard); NVD (open database); EPSS exploit prediction (open model, FIRST.org); Tenable / Qualys scanner exports (SaaS); Snyk (SaaS); GitHub Dependabot alerts (SaaS)",
-    "implementabilityNote": "CVSS and EPSS are open standards. Vulnerability scanner outputs (Tenable, Qualys, Snyk) are widely used SaaS. The triage logic layer sits on top of these open/SaaS sources and does not require proprietary government-internal systems."
+    "implementabilityNote": "CVSS and EPSS are open standards. Vulnerability scanner outputs (Tenable, Qualys, Snyk) are widely used SaaS. The triage logic layer sits on top of these open/SaaS sources and does not require proprietary government-internal systems.",
+    "whenToUse": "After receiving vulnerability scanner output or a penetration test report, when the security team needs to prioritise which vulnerabilities to remediate first across a potentially large finding list.",
+    "inputs": [
+      "Vulnerability scanner export or penetration test report (Tenable / Qualys / Snyk / GitHub Dependabot output)",
+      "Asset inventory with criticality ratings",
+      "CVSS scores for each vulnerability (from NVD where not included in the scanner output)",
+      "EPSS scores (from FIRST.org)"
+    ],
+    "instructions": [
+      "Parse the vulnerability scanner export or penetration test report to extract all open findings with their CVSS scores.",
+      "Look up EPSS scores for each CVE ID using the EPSS API from FIRST.org.",
+      "Load the asset inventory and match each vulnerability to its affected asset, pulling the asset criticality rating.",
+      "Calculate a composite triage score for each finding: CVSS base score × EPSS probability × asset criticality multiplier.",
+      "Rank all findings by composite triage score, highest first.",
+      "Group findings into four triage bands: Critical (remediate within 24h), High (within 7 days), Medium (within 30 days), Low (next cycle).",
+      "Produce a triage report with findings ranked and banded, including the composite score, CVSS, EPSS, and asset context per finding."
+    ],
+    "toolsAllowed": "CVSS scoring (open NIST standard); NVD (open database); EPSS (open model, FIRST.org); Tenable / Qualys scanner exports (SaaS); Snyk (SaaS); GitHub Dependabot alerts (SaaS)",
+    "outputFormat": "Vulnerability triage report (PDF or spreadsheet) with findings ranked by composite score, organised into triage bands, with CVSS score, EPSS score, asset criticality, and recommended remediation timeframe per finding.",
+    "constraintsList": [
+      "The triage score is a decision-support tool — final prioritisation decisions must be made by a qualified security lead.",
+      "Asset criticality ratings must be reviewed and approved by the system owner before use in scoring.",
+      "Do not share raw vulnerability data outside authorised security channels."
+    ],
+    "failureHandling": "If EPSS data is unavailable for a CVE, default the EPSS factor to a conservative estimate and flag the finding for manual review. If the asset inventory is incomplete, flag affected findings as unrated and escalate to the asset owner.",
+    "skillExamples": [
+      "Input: 143 findings from a Tenable scan, asset inventory of 40 servers with criticality ratings. Output: Triage report with 4 Critical findings (remediate within 24h), 18 High, 71 Medium, 50 Low — with the top Critical finding linked to an unpatched RCE on a Tier-1 production server."
+    ]
   },
   {
     "id": "GT-15",
     "name": "ICT Security Policy Consistency Checker",
     "category": "Cybersecurity",
     "agency": "GovTech",
-    "description": "Compares proposed ICT security policies or system design documents against the Singapore Government ICT & Data Management framework and flags inconsistencies or non-compliance.",
+    "description": "Compare proposed ICT security policies or system design documents against the Singapore Government ICT & Data Management framework and flag inconsistencies or non-compliance — reducing manual policy review time.",
     "primaryUseCase": "Validate security policy documents quickly",
     "targetJobRoles": "Cybersecurity Policy Officers; IT Governance Engineers; Product Policy Managers; Security Architects",
     "efficiencyGain": "40% reduction in manual policy review time",
     "complexityLevel": "Medium",
     "dependencies": "Singapore Government ICT policy library; policy document parser; compliance ruleset",
     "saasDependencies": "Singapore Government ICT & Data Management policies (publicly published on tech.gov.sg); PDF/Word document parser (open-source: PyMuPDF / Apache Tika); NIST CSF (open framework); ISO 27001 controls (open standard reference)",
-    "implementabilityNote": "The Singapore Government ICT & Data Management framework is publicly published. Document parsing libraries are open-source. NIST and ISO are open reference standards. The skill does not need classified internal policy documents to function at a useful baseline."
+    "implementabilityNote": "The Singapore Government ICT & Data Management framework is publicly published. Document parsing libraries are open-source. NIST and ISO are open reference standards. The skill does not need classified internal policy documents to function at a useful baseline.",
+    "whenToUse": "When a policy officer, security architect, or IT governance engineer needs to validate a new or updated ICT security policy or system design document against the Singapore Government ICT & Data Management framework before submission for approval.",
+    "inputs": [
+      "Proposed policy or system design document (PDF or Word)",
+      "Singapore Government ICT & Data Management policy library (published on tech.gov.sg)",
+      "Relevant compliance frameworks as supplementary reference (NIST CSF, ISO 27001 controls)"
+    ],
+    "instructions": [
+      "Parse the submitted document using a document parser (PyMuPDF / Apache Tika) to extract full text.",
+      "Load the Singapore Government ICT & Data Management framework as the primary reference.",
+      "Identify the key policy areas covered by the submitted document (e.g. data classification, access control, incident response).",
+      "For each policy area, compare the document's stated requirements against the corresponding framework requirements.",
+      "Flag any gaps (requirements present in the framework but missing from the document) and conflicts (document requirements that contradict the framework).",
+      "Apply secondary checks against NIST CSF and ISO 27001 for any areas the framework does not fully specify.",
+      "Produce a consistency report with a compliance summary table and detailed finding notes."
+    ],
+    "toolsAllowed": "Singapore Government ICT & Data Management policies (public, tech.gov.sg); PyMuPDF / Apache Tika (open-source document parsers); NIST CSF (open framework); ISO 27001 controls (open reference standard)",
+    "outputFormat": "Policy consistency report (PDF or Word) containing: compliance summary table (policy area, framework requirement, document status, finding type), detailed findings with document location references, and a list of recommended revisions.",
+    "constraintsList": [
+      "The checker assesses consistency against the published framework — it does not assess operational effectiveness of the policy.",
+      "Classified annexes or restricted framework documents cannot be processed through this skill without appropriate clearance.",
+      "The report is for internal review and must not be shared publicly."
+    ],
+    "failureHandling": "If the document cannot be parsed (e.g. scanned PDF without OCR), return an error and request a text-searchable version. If the framework reference is outdated, alert the user and request confirmation of the correct version before proceeding.",
+    "skillExamples": [
+      "Input: Draft ICT Security Policy for a new citizen data platform. Output: Consistency report finding 2 gaps (missing data retention clause, incomplete incident escalation path) and 1 conflict (proposed 90-day log retention contradicts framework's 1-year minimum)."
+    ]
   },
   {
     "id": "GT-20",
     "name": "ServiceNow Incident Auto-Summariser",
     "category": "IT Operations",
     "agency": "GovTech",
-    "description": "Reads incoming IT service desk tickets and auto-generates concise structured summaries, suggests resolution categories, and routes tickets to the appropriate team based on past patterns.",
+    "description": "Read incoming IT service desk tickets and auto-generate concise structured summaries, suggest resolution categories, and route tickets to the appropriate team based on past patterns — speeding up IT service desk triage.",
     "primaryUseCase": "Speed up IT service desk triage",
     "targetJobRoles": "IT Service Desk Engineers; Operations Managers; Helpdesk Staff; Platform Engineers",
     "efficiencyGain": "55% faster incident triage and routing",
     "complexityLevel": "Medium",
     "dependencies": "ServiceNow API; ticket history database; NLP classification model; routing rules",
     "saasDependencies": "ServiceNow (SaaS — globally available enterprise platform with public API); Hugging Face NLP models (open-source); spaCy / NLTK (open-source NLP libraries)",
-    "implementabilityNote": "ServiceNow is a standard commercial SaaS with a well-documented public API. NLP classification can be built with open-source models (Hugging Face, spaCy). The skill operates on ticket text content — no dependency on classified government infrastructure."
+    "implementabilityNote": "ServiceNow is a standard commercial SaaS with a well-documented public API. NLP classification can be built with open-source models (Hugging Face, spaCy). The skill operates on ticket text content — no dependency on classified government infrastructure.",
+    "whenToUse": "When a new IT service desk ticket is submitted to ServiceNow and needs to be triaged, categorised, and routed to the appropriate resolver group without manual reading of each ticket.",
+    "inputs": [
+      "New incoming ServiceNow ticket (via API or webhook trigger)",
+      "Historical resolved ticket dataset (for pattern matching and routing rules)",
+      "Resolver group directory (team names and areas of responsibility)"
+    ],
+    "instructions": [
+      "Receive the new ticket via ServiceNow API or webhook trigger.",
+      "Extract the ticket title, description, affected system, and any attached error messages.",
+      "Run NLP classification on the ticket text to identify the incident type and likely resolution category (using trained Hugging Face model or spaCy classifier).",
+      "Search the historical resolved ticket dataset for similar incidents and retrieve the top 3 matches with their resolution paths.",
+      "Based on the classification and historical matches, recommend a resolver group from the directory.",
+      "Generate a concise structured summary of the ticket: one-sentence problem statement, affected system, suggested category, recommended resolver group, and links to similar resolved tickets.",
+      "Update the ServiceNow ticket record with the summary, category, and routing recommendation, flagging it for human review before assignment is finalised."
+    ],
+    "toolsAllowed": "ServiceNow (SaaS, public API); Hugging Face NLP models (open-source); spaCy / NLTK (open-source NLP libraries)",
+    "outputFormat": "Structured ticket summary added as a ServiceNow internal note, containing: one-sentence problem statement, affected system, suggested incident category, recommended resolver group, confidence score, and links to top 3 similar resolved tickets.",
+    "constraintsList": [
+      "The routing recommendation requires human confirmation before the ticket is formally assigned — this skill does not auto-assign.",
+      "Historical ticket data used for training must be handled according to government data governance policies.",
+      "Confidence scores below a threshold (e.g. 60%) must trigger a manual review flag rather than a routing suggestion."
+    ],
+    "failureHandling": "If the ServiceNow API is unavailable, queue the processing request and retry on reconnection. If the NLP model returns low confidence on all categories, flag the ticket for manual triage by the helpdesk lead.",
+    "skillExamples": [
+      "Input: Ticket: 'Cannot access Intranet since this morning, getting timeout errors on Chrome.' Output: Summary — 'User unable to access Intranet portal; timeout errors on Chrome. Category: Network/Connectivity. Recommended resolver: Network Operations. Similar resolved tickets: INC-2201, INC-1988.'"
+    ]
   },
   {
     "id": "MDDI-01",
     "name": "Emerging Technology Horizon Scanner",
     "category": "Policy & Strategy",
     "agency": "MDDI",
-    "description": "Scans technology news, research publications, and industry reports to produce structured briefings on emerging technologies (e.g. AI, quantum, 6G) and their potential implications for Singapore's digital economy and policy.",
+    "description": "Scan technology news, research publications, and industry reports to produce structured briefings on emerging technologies and their potential implications for Singapore's digital economy and policy.",
     "primaryUseCase": "Scan and synthesise emerging tech developments",
     "targetJobRoles": "Policy Officers; Tech Strategy Officers; Futures Analysts; Digital Economy Managers",
     "efficiencyGain": "50% faster technology trend monitoring",
     "complexityLevel": "Medium",
     "dependencies": "News API feeds; academic paper databases (ArXiv/ACM); industry analyst reports; topic classifier",
     "saasDependencies": "ArXiv (open-access); Semantic Scholar API (open); Google News / NewsAPI (SaaS freemium); RSS/ATOM feeds (open standard); Perplexity / Elicit (AI research SaaS); Feedly (SaaS aggregator)",
-    "implementabilityNote": "All primary source dependencies — ArXiv, Semantic Scholar, news feeds, RSS — are open access or standard SaaS. No government-internal databases required. A fully functional version can be built on entirely public sources."
+    "implementabilityNote": "All primary source dependencies — ArXiv, Semantic Scholar, news feeds, RSS — are open access or standard SaaS. No government-internal databases required. A fully functional version can be built on entirely public sources.",
+    "whenToUse": "When a policy officer or technology strategy team needs a structured briefing on emerging technology developments (e.g. AI, quantum computing, 6G) to inform policy planning or ministerial briefings.",
+    "inputs": [
+      "Target technology domain or topics of interest (e.g. 'generative AI in public services', 'quantum cryptography')",
+      "Time window for scanning (e.g. past 30 days)",
+      "Preferred sources (e.g. ArXiv, IEEE, industry analyst reports, news)"
+    ],
+    "instructions": [
+      "Formulate search queries for the target technology domain and time window.",
+      "Pull relevant results from ArXiv (open-access), Semantic Scholar API, Google News / NewsAPI, and configured RSS/ATOM feeds.",
+      "Filter results for relevance to the target domain, removing noise and duplicates.",
+      "Classify each relevant item by signal type: research breakthrough, industry deployment, policy development, or regulatory development.",
+      "Extract the key finding or development from each item in 2–3 sentences.",
+      "Assess the potential implications for Singapore's digital economy or relevant policy areas for the top-ranked items.",
+      "Compile the structured briefing with an executive summary, followed by sectioned findings by signal type, and a implications section for Singapore."
+    ],
+    "toolsAllowed": "ArXiv (open-access); Semantic Scholar API (open); Google News / NewsAPI (SaaS freemium); RSS/ATOM feeds (open standard); Perplexity / Elicit (AI research SaaS); Feedly (SaaS aggregator)",
+    "outputFormat": "Technology horizon briefing document (PDF, Word, or Notion page) containing: executive summary (3–5 sentences), findings organised by signal type, key developments with source and date, and a Singapore implications section with recommended follow-up questions for policy review.",
+    "constraintsList": [
+      "Findings must be sourced and attributed; no synthesis of unsourced claims.",
+      "Assessments of Singapore implications are analytical observations, not policy positions.",
+      "The briefing should note where a topic has limited published evidence to avoid overstating maturity."
+    ],
+    "failureHandling": "If ArXiv or news APIs return no results for the query window, broaden the search window or adjust keywords and retry. If all sources are unavailable, note the failure and request manual input of source documents.",
+    "skillExamples": [
+      "Input: Topic: 'AI agents in government services', past 30 days. Output: Briefing with 4 research developments, 3 industry deployments (UK, Estonia, UAE), and a Singapore implications section noting alignment with Smart Nation goals and suggested policy watch areas."
+    ]
   },
   {
     "id": "MDDI-04",
     "name": "Digital Economy KPI Dashboard Builder",
     "category": "Policy & Strategy",
     "agency": "MDDI",
-    "description": "Automatically assembles up-to-date KPI dashboards for Singapore's digital economy metrics (e.g. SME digitalisation rates, digital trade flows, ICT sector growth) by pulling from multiple data sources.",
+    "description": "Automatically assemble up-to-date KPI dashboards for Singapore's digital economy metrics by pulling from multiple public data sources — reducing reporting preparation time.",
     "primaryUseCase": "Monitor digital economy performance indicators",
     "targetJobRoles": "Digital Economy Managers; Policy Officers; Directors; Senior Ministers of State",
     "efficiencyGain": "35% faster reporting preparation",
     "complexityLevel": "Medium",
     "dependencies": "Government statistical APIs (SingStat); IMDA data sources; BI dashboarding tool (Tableau/PowerBI)",
     "saasDependencies": "SingStat open data API (publicly accessible); data.gov.sg (open government data portal); Tableau Public / PowerBI (SaaS); Google Looker Studio (free SaaS); IMDA annual reports (publicly published PDFs)",
-    "implementabilityNote": "SingStat and data.gov.sg are open public APIs. Tableau and PowerBI are widely available SaaS. IMDA publications are public. The dashboard can be fully assembled from open government data without internal-network access."
+    "implementabilityNote": "SingStat and data.gov.sg are open public APIs. Tableau and PowerBI are widely available SaaS. IMDA publications are public. The dashboard can be fully assembled from open government data without internal-network access.",
+    "whenToUse": "When a digital economy manager, policy officer, or director needs an up-to-date KPI dashboard for Singapore's digital economy performance metrics for reporting, ministerial briefings, or performance reviews.",
+    "inputs": [
+      "List of KPIs to include (e.g. SME digitalisation rate, ICT sector growth, digital trade flows)",
+      "SingStat and data.gov.sg dataset identifiers for each KPI",
+      "Dashboard template or layout specification",
+      "Reporting period"
+    ],
+    "instructions": [
+      "For each KPI, call the SingStat Open Data API or data.gov.sg API to retrieve the latest available data for the specified reporting period.",
+      "Download relevant IMDA annual report data (publicly published PDFs) and extract numeric KPI values using a PDF parser if API data is unavailable.",
+      "Validate retrieved data against expected ranges and flag any anomalies for manual review.",
+      "Load the data into the dashboard tool (Google Looker Studio / Tableau Public / PowerBI) via data connectors or CSV import.",
+      "Apply the approved dashboard template or layout specification.",
+      "Generate the dashboard and export as PDF and interactive link.",
+      "Attach a data notes section listing sources, data dates, and any gaps or caveats."
+    ],
+    "toolsAllowed": "SingStat Open Data API (public); data.gov.sg (open government data portal); Tableau Public / PowerBI (SaaS); Google Looker Studio (free SaaS); IMDA annual reports (public PDFs)",
+    "outputFormat": "KPI dashboard (interactive dashboard link + PDF export) with: KPI tiles showing current value and trend, source and date labels per KPI, and a data notes annex listing sources and any data caveats.",
+    "constraintsList": [
+      "Use only officially published government statistics — do not use estimated or extrapolated values without flagging them.",
+      "Data freshness must be noted on the dashboard; do not present outdated data as current.",
+      "Dashboard access permissions must be set appropriately before sharing with senior management."
+    ],
+    "failureHandling": "If an API returns no data for the requested period, flag that KPI as data-pending and source the latest available prior period data as a fallback with a note. If the dashboard tool is unavailable, output the data as a formatted table in a Word or Google Doc.",
+    "skillExamples": [
+      "Input: 8 KPIs for Q1 FY2025, SingStat and data.gov.sg sources. Output: Dashboard with 8 KPI tiles, trend charts, and a data notes annex flagging 1 KPI as using prior-quarter data pending SingStat update."
+    ]
   },
   {
     "id": "MDDI-05",
     "name": "Media Narrative Tracker",
     "category": "Communications",
     "agency": "MDDI",
-    "description": "Monitors local and international news coverage, social media, and online forums to track the narratives forming around MDDI's key policy areas and generates daily sentiment and topic reports.",
+    "description": "Monitor local and international news coverage, social media, and online forums to track narratives forming around MDDI's key policy areas and generate daily sentiment and topic reports.",
     "primaryUseCase": "Track and manage public narratives proactively",
     "targetJobRoles": "Media Relations Officers; Communications Officers; Senior Managers; Press Secretaries",
     "efficiencyGain": "55% faster media monitoring and reporting",
     "complexityLevel": "Medium",
     "dependencies": "News monitoring API; social listening platform; sentiment analysis model; topic categoriser",
     "saasDependencies": "NewsAPI / GDELT (open/SaaS); Meltwater / Brandwatch (SaaS media monitoring); Reddit / X API (SaaS); Hugging Face sentiment models (open-source); Google Alerts (free SaaS)",
-    "implementabilityNote": "All dependencies are publicly accessible SaaS or open-source tools. Media monitoring platforms like Meltwater and Brandwatch are standard commercial SaaS. Sentiment analysis models are available open-source on Hugging Face. No internal government data required."
+    "implementabilityNote": "All dependencies are publicly accessible SaaS or open-source tools. Media monitoring platforms like Meltwater and Brandwatch are standard commercial SaaS. Sentiment analysis models are available open-source on Hugging Face. No internal government data required.",
+    "whenToUse": "Daily or on-demand, when communications officers or senior managers need a structured report on how MDDI's key policy areas are being covered and discussed in the media and public discourse.",
+    "inputs": [
+      "List of monitored policy areas or topics (e.g. 'Singapore digital economy', 'online safety regulations', 'POFMA')",
+      "Monitored source list (news outlets, social media platforms, online forums)",
+      "Sentiment baseline from previous report (for trend comparison)"
+    ],
+    "instructions": [
+      "Run search queries across configured news monitoring sources (NewsAPI, GDELT) for each monitored topic.",
+      "Pull social media and forum mentions from X API and Reddit API for each topic.",
+      "Classify each item by narrative type: supportive, critical, neutral, or speculative.",
+      "Run sentiment analysis on each item using the configured sentiment model (Hugging Face / VADER).",
+      "Calculate aggregate sentiment scores per topic and compare against the prior period baseline.",
+      "Identify emerging narrative threads — new angles or framing that have appeared in the past 24 hours.",
+      "Compile the daily report with: overall sentiment summary per topic, volume of coverage, top narratives, emerging threads, and notable individual articles or posts flagged for attention."
+    ],
+    "toolsAllowed": "NewsAPI / GDELT (open/SaaS); Meltwater / Brandwatch (SaaS media monitoring); Reddit / X API (SaaS); Hugging Face sentiment models (open-source); Google Alerts (free SaaS)",
+    "outputFormat": "Daily media narrative report (PDF or email digest) containing: sentiment summary dashboard (volume + tone per topic), top narratives section with representative headlines, emerging narrative threads, and a flagged items section for senior management attention.",
+    "constraintsList": [
+      "Social media data must be collected in accordance with platform terms of service and government data governance policies.",
+      "Sentiment scores are algorithmic indicators — final interpretation requires human editorial judgement.",
+      "The report must not attribute political intent or motivation to individuals based on sentiment scores alone."
+    ],
+    "failureHandling": "If a social media API is unavailable, note the source gap in the report and proceed with available sources. If sentiment model confidence is low for a batch of items, flag them as manual-review-required in the report.",
+    "skillExamples": [
+      "Input: Topics: 'online safety bill', 'SME digitalisation grants'. Output: Daily report showing online safety bill coverage shifted to 45% critical sentiment (up from 30% prior day) driven by 3 new opinion pieces; SME grants coverage remains positive at 72% supportive."
+    ]
   },
   {
     "id": "MDDI-06",
     "name": "Press Release & Speech Drafter",
     "category": "Communications",
     "agency": "MDDI",
-    "description": "Generates first drafts of press releases, ministerial speeches, and media statements for digital and infocomm-related topics based on key messages, policy context, and audience briefing notes.",
+    "description": "Generate first drafts of press releases, ministerial speeches, and media statements for digital and infocomm-related topics based on key messages, policy context, and audience briefing notes.",
     "primaryUseCase": "Accelerate government communications drafting",
     "targetJobRoles": "Media Relations Officers; Communications Officers; Speechwriters; Information Officers",
     "efficiencyGain": "50% reduction in first-draft production time",
     "complexityLevel": "Low",
     "dependencies": "Key message briefs; policy documents; past press release library; style guidelines",
     "saasDependencies": "MDDI press releases (publicly published on mddi.gov.sg); Microsoft 365 / Google Docs (SaaS); Claude / GPT-4 API (SaaS LLM); past speeches on PMO/ministerial websites (public)",
-    "implementabilityNote": "Input source documents are all publicly available (MDDI.gov.sg, PMO speeches). Output goes to standard SaaS document tools (M365/Google Docs). The LLM layer is a standard API call. Lowest barrier to implement of all skills on this list."
+    "implementabilityNote": "Input source documents are all publicly available (MDDI.gov.sg, PMO speeches). Output goes to standard SaaS document tools (M365/Google Docs). The LLM layer is a standard API call. Lowest barrier to implement of all skills on this list.",
+    "whenToUse": "When a communications officer, speechwriter, or information officer needs to rapidly produce a first draft of a press release, ministerial speech, or media statement and has the key messages and policy context ready.",
+    "inputs": [
+      "Key messages brief (bullet points of what must be communicated)",
+      "Policy context document or background brief",
+      "Audience description and occasion (e.g. industry event, press conference)",
+      "Target length and format (press release / speech / media statement)",
+      "Style guidelines or past examples for reference (from MDDI.gov.sg or PMO)"
+    ],
+    "instructions": [
+      "Read the key messages brief and policy context document fully.",
+      "Review provided style guidelines or past examples to calibrate tone, register, and format.",
+      "Draft the document in the appropriate format: for a press release: headline, dateline, opening paragraph (5Ws), body with quotes, boilerplate; for a speech: opening acknowledgements, context-setting introduction, thematic sections aligned to key messages, closing call to action; for a media statement: concise factual statement, official position, and contact information.",
+      "Ensure all key messages are included and clearly expressed in plain language appropriate to the audience.",
+      "Insert placeholder tags for ministerial names, event details, and statistics that require confirmation (e.g. [MINISTER NAME], [DATE], [STATISTIC]).",
+      "Return the draft with a brief cover note listing assumptions made and items requiring fact-checking."
+    ],
+    "toolsAllowed": "MDDI press releases (public, mddi.gov.sg); Microsoft 365 / Google Docs (SaaS); Claude / GPT-4 API (SaaS LLM); past speeches on PMO/ministerial websites (public)",
+    "outputFormat": "Draft document (Word / Google Doc) in the specified format, with placeholder tags for items requiring confirmation, and a cover note listing assumptions, fact-check items, and suggested review points.",
+    "constraintsList": [
+      "All drafts must be reviewed, edited, and approved by an authorised communications officer before any external distribution.",
+      "Do not include unverified statistics, claims, or quotes in the draft — use placeholder tags instead.",
+      "Political statements or policy positions must align with approved government positions — flag any uncertainty to the reviewer."
+    ],
+    "failureHandling": "If the key messages brief is insufficient to draft the document, return a clarifying question list before proceeding. If past examples cannot be accessed, proceed with standard government communications style and note the assumption.",
+    "skillExamples": [
+      "Input: Key messages on a new digital inclusion initiative, speech for Minister at a tech forum, 800 words, Singapore English style. Output: 820-word speech draft with 5 key messages woven in, [STATISTIC] placeholders for 3 figures, and a cover note flagging 2 items for communications team review."
+    ]
   },
   {
     "id": "MDDI-08",
     "name": "Misinformation Detection & Flagging Agent",
     "category": "Online Safety & Digital Defence",
     "agency": "MDDI",
-    "description": "Monitors specified platforms and news sources for content that may constitute misinformation or disinformation on national issues, scores credibility and viral risk, and alerts officers for review.",
+    "description": "Monitor specified platforms and news sources for content that may constitute misinformation or disinformation on national issues, score credibility and viral risk, and alert officers for review.",
     "primaryUseCase": "Detect potential misinformation early for policy review",
     "targetJobRoles": "Digital Defence Officers; Media Relations Officers; Policy Officers; Legal Advisors",
     "efficiencyGain": "50% faster misinformation identification",
     "complexityLevel": "High",
     "dependencies": "Social media monitoring APIs; fact-checking database; viral spread model; POFMA trigger checklist",
     "saasDependencies": "X / Meta Content Library APIs (SaaS); GDELT real-time news (open); ClaimBuster API (open-source fact-check); Duke Reporters' Lab database (open); NewsGuard (SaaS); Hugging Face misinformation classifiers (open-source)",
-    "implementabilityNote": "Social media monitoring APIs, GDELT, and open-source misinformation classifiers are all publicly accessible. The viral spread modelling layer can use open academic models. Only the POFMA trigger checklist is an internal document — everything else is open."
+    "implementabilityNote": "Social media monitoring APIs, GDELT, and open-source misinformation classifiers are all publicly accessible. The viral spread modelling layer can use open academic models. Only the POFMA trigger checklist is an internal document — everything else is open.",
+    "whenToUse": "On a continuous or scheduled basis, when digital defence officers need to monitor public platforms for potential misinformation related to national policy areas and flag items for review before they go viral.",
+    "inputs": [
+      "List of monitored topics and keywords (e.g. specific policy names, public health topics, national security issues)",
+      "Monitored platform list (X, Facebook, Reddit, news sites)",
+      "POFMA trigger checklist (internal reference document)",
+      "Fact-checking reference database (ClaimBuster, Duke Reporters' Lab)"
+    ],
+    "instructions": [
+      "Monitor configured platforms and news sources for content matching the monitored topics and keywords.",
+      "For each flagged item, extract: source, content text, timestamp, engagement metrics (shares, likes, comments), and reach estimate.",
+      "Cross-reference the item against the fact-checking reference database (ClaimBuster API, Duke Reporters' Lab) to check if the specific claim has been previously debunked.",
+      "Run a misinformation classification model (Hugging Face) on the content to score claim credibility.",
+      "Estimate viral risk using the engagement metrics and spread velocity.",
+      "Combine credibility score and viral risk into a composite alert score.",
+      "For items above the alert threshold, generate a flagging report with: content excerpt, source, credibility score, viral risk score, fact-check database result, and recommended action (monitor / respond / escalate).",
+      "Route the flagging report to the designated digital defence officer for review."
+    ],
+    "toolsAllowed": "X / Meta Content Library APIs (SaaS); GDELT real-time news (open); ClaimBuster API (open-source fact-check); Duke Reporters' Lab database (open); NewsGuard (SaaS); Hugging Face misinformation classifiers (open-source)",
+    "outputFormat": "Flagging alert report (email or Slack alert + PDF summary) for each flagged item containing: content excerpt, platform and source, timestamp, engagement metrics, credibility score, viral risk score, fact-check result, and recommended action.",
+    "constraintsList": [
+      "This skill flags items for human review — it does not trigger any government response or POFMA action automatically.",
+      "POFMA trigger assessment must be conducted by legally authorised officers; the skill does not perform legal assessment.",
+      "Private communications must not be monitored; only public-facing content on monitored platforms."
+    ],
+    "failureHandling": "If a platform API is unavailable, note the monitoring gap in the daily log. If the misinformation classifier returns a confidence below threshold, flag the item as uncertain and route for manual review by the digital defence team.",
+    "skillExamples": [
+      "Input: Monitoring topic: 'CPF withdrawal policy'. Output: Alert flagging a viral post with 12,000 shares claiming CPF withdrawal age has changed — credibility score 0.15 (low), viral risk high, fact-check: claim debunked by CPF Board statement. Recommended action: Escalate for response."
+    ]
   },
   {
     "id": "SG-28",
     "name": "External Intelligence Aggregator",
     "category": "Intelligence & Research",
     "agency": "Cross-agency",
-    "description": "Compiles news, reports, and research on relevant topics for contextual intelligence.",
+    "description": "Compile news, reports, and research on relevant topics for contextual intelligence — enabling faster research on the external environment.",
     "primaryUseCase": "Research external environment",
     "targetJobRoles": "Policy Officers; Operations Analysts; Research Officers; Intelligence Analysts",
     "efficiencyGain": "45% faster research compilation",
     "complexityLevel": "Medium",
     "dependencies": "News feeds; research databases; web scraping tools",
     "saasDependencies": "RSS/ATOM news feeds (open standard); Google Scholar / Semantic Scholar (open SaaS); GDELT (open dataset); NewsAPI (SaaS); Scrapy / BeautifulSoup (open-source web scraping); Feedly (SaaS)",
-    "implementabilityNote": "All dependencies are open-access or standard SaaS. News feeds, academic databases, and web scraping libraries have no government-network dependency. Fully buildable on public internet infrastructure."
+    "implementabilityNote": "All dependencies are open-access or standard SaaS. News feeds, academic databases, and web scraping libraries have no government-network dependency. Fully buildable on public internet infrastructure.",
+    "whenToUse": "When a policy officer, research officer, or operations analyst needs a consolidated intelligence brief on a specific topic from multiple external sources, to inform policy work, programme planning, or operational decisions.",
+    "inputs": [
+      "Research topic or question",
+      "Preferred source types (news, academic research, government reports, industry publications)",
+      "Time window (e.g. past 6 months)",
+      "Output format preference (brief / detailed report / annotated bibliography)"
+    ],
+    "instructions": [
+      "Formulate targeted search queries for the research topic across configured sources.",
+      "Pull results from RSS/ATOM news feeds, Google Scholar / Semantic Scholar, GDELT dataset, and NewsAPI.",
+      "Filter results for relevance to the topic, removing duplicates and low-quality sources.",
+      "For each relevant result, extract: source name, publication date, title, and key finding or argument in 2–3 sentences.",
+      "Organise results by source type (news / academic / government / industry).",
+      "Identify areas of consensus across sources and note where sources diverge or contradict.",
+      "Compile the intelligence brief with an executive summary, organised findings by source type, and a source list with links."
+    ],
+    "toolsAllowed": "RSS/ATOM news feeds (open standard); Google Scholar / Semantic Scholar (open SaaS); GDELT (open dataset); NewsAPI (SaaS); Scrapy / BeautifulSoup (open-source web scraping); Feedly (SaaS aggregator)",
+    "outputFormat": "Intelligence brief (PDF, Word, or Notion page) with: executive summary, findings organised by source type, areas of consensus and divergence noted, and an annotated source list with publication dates and links.",
+    "constraintsList": [
+      "All sources must be attributed — do not present unsourced information as intelligence.",
+      "Web scraping must respect robots.txt and terms of service of target sites.",
+      "The brief represents the current external environment and should not be treated as validated policy advice."
+    ],
+    "failureHandling": "If the primary research databases return insufficient results, broaden the query terms or extend the time window. If web scraping is blocked, note the source gap and use available API-based sources.",
+    "skillExamples": [
+      "Input: Topic: 'Digital identity frameworks in Southeast Asia', past 12 months, news + academic + government sources. Output: Intelligence brief with 18 sources, executive summary noting convergence on mobile-first identity approaches, and a divergence note on data sovereignty approaches across ASEAN countries."
+    ]
   },
   {
     "id": "SG-29",
     "name": "Comparative Policy Analyzer",
     "category": "Intelligence & Research",
     "agency": "Cross-agency",
-    "description": "Benchmarks Singapore policies against international practices or other agencies.",
+    "description": "Benchmark Singapore policies against international practices or other agencies to support evidence-based policy development.",
     "primaryUseCase": "Conduct policy benchmarking",
     "targetJobRoles": "Policy Officers; Strategic Planning Officers; Management Consultants",
     "efficiencyGain": "50% reduction in analysis time",
     "complexityLevel": "High",
     "dependencies": "Policy databases; international sources; comparative framework",
     "saasDependencies": "OECD iLibrary (open access); World Bank Open Data (open); UNDP policy reports (open); Singapore statutes online (sso.agc.gov.sg — public); JSTOR / ScienceDirect (SaaS academic); comparative policy frameworks (open academic literature)",
-    "implementabilityNote": "International policy databases (OECD, World Bank, UNDP) are open access. Singapore statutes are publicly accessible online. Academic databases are SaaS with institutional access. No classified internal systems required."
+    "implementabilityNote": "International policy databases (OECD, World Bank, UNDP) are open access. Singapore statutes are publicly accessible online. Academic databases are SaaS with institutional access. No classified internal systems required.",
+    "whenToUse": "When a policy officer or strategic planning officer needs to understand how Singapore's approach to a specific policy area compares to international peers or other agencies, to inform policy review or development.",
+    "inputs": [
+      "Policy area or specific policy to benchmark (e.g. 'digital inclusion policy', 'data governance framework')",
+      "Comparison scope (specific countries, regions, or types of organisations)",
+      "Comparative framework or evaluation criteria (provided or to be inferred from policy objectives)"
+    ],
+    "instructions": [
+      "Load the target Singapore policy document or relevant statutes from Singapore Statutes Online (sso.agc.gov.sg).",
+      "Search OECD iLibrary, World Bank Open Data, UNDP policy reports, and academic databases for comparable policies in the specified comparison scope.",
+      "Extract key policy dimensions from the Singapore policy (objectives, mechanisms, scope, enforcement, outcomes).",
+      "For each comparator jurisdiction, extract the same dimensions from the identified policy documents.",
+      "Construct a comparative table mapping each jurisdiction against the policy dimensions.",
+      "Identify areas where Singapore's approach leads, aligns with, or lags behind international practice.",
+      "Note contextual differences (legal systems, population size, economic context) that may affect direct comparability.",
+      "Draft the comparative analysis report with findings and observations for policy consideration."
+    ],
+    "toolsAllowed": "OECD iLibrary (open access); World Bank Open Data (open); UNDP policy reports (open); Singapore Statutes Online — sso.agc.gov.sg (public); JSTOR / ScienceDirect (SaaS academic); comparative policy frameworks (open academic literature)",
+    "outputFormat": "Comparative policy analysis report (PDF or Word) containing: policy dimensions summary, comparative table (Singapore vs comparator jurisdictions per dimension), key findings (where Singapore leads / aligns / lags), contextual caveats, and observations for policy consideration.",
+    "constraintsList": [
+      "The analysis reflects published policy documents — it does not assess implementation effectiveness unless outcome data is publicly available.",
+      "Contextual differences between jurisdictions must be clearly noted to avoid misleading direct comparisons.",
+      "The report is for internal policy deliberation and must not be published externally without appropriate review."
+    ],
+    "failureHandling": "If insufficient international comparator data is found, note the limitation and recommend commissioning a targeted literature review. If a Singapore statute cannot be accessed, alert the user and request a copy from the policy lead.",
+    "skillExamples": [
+      "Input: Policy area: 'Elderly digital inclusion programmes', comparison scope: OECD countries + Hong Kong + Japan. Output: Comparative report covering 8 jurisdictions, finding Singapore ahead on device subsidy programmes but below average on community facilitator density."
+    ]
   },
   {
     "id": "SG-30",
     "name": "Interview Insight Extractor",
     "category": "Intelligence & Research",
     "agency": "Cross-agency",
-    "description": "Transcribes and summarizes key findings from stakeholder/citizen interviews.",
+    "description": "Transcribe and summarise key findings from stakeholder or citizen interviews — enabling faster extraction of insights from qualitative research.",
     "primaryUseCase": "Extract interview insights",
     "targetJobRoles": "Policy Officers; Researchers; Operations Analysts",
     "efficiencyGain": "40% faster interview analysis",
     "complexityLevel": "Medium",
     "dependencies": "Transcription service; interview analysis tools",
     "saasDependencies": "Otter.ai / AssemblyAI / Whisper (open-source / SaaS transcription); Dovetail / EnjoyHQ (SaaS qualitative analysis); Notion AI (SaaS); Zoom auto-transcription (SaaS); OpenAI Whisper (open-source model)",
-    "implementabilityNote": "Transcription is well-served by open-source (Whisper) and SaaS options (Otter.ai, AssemblyAI). Qualitative analysis platforms are standard SaaS. Recordings are stored in standard cloud tools. No internal government systems required."
+    "implementabilityNote": "Transcription is well-served by open-source (Whisper) and SaaS options (Otter.ai, AssemblyAI). Qualitative analysis platforms are standard SaaS. Recordings are stored in standard cloud tools. No internal government systems required.",
+    "whenToUse": "After conducting stakeholder or citizen interviews, when policy officers, researchers, or operations analysts need to extract and organise key findings from audio or video recordings without spending hours on manual transcription and note-taking.",
+    "inputs": [
+      "Interview audio or video recording files (MP3, MP4, or equivalent)",
+      "Interview guide or discussion questions used",
+      "Research objectives or key questions the interviews were designed to answer"
+    ],
+    "instructions": [
+      "Transcribe the interview recording using the configured transcription service (Whisper / Otter.ai / AssemblyAI).",
+      "Review the transcript for accuracy and correct any obvious transcription errors (particularly proper nouns and technical terms).",
+      "Read the research objectives and interview guide to identify the key themes to extract.",
+      "Tag the transcript by theme — highlight passages relevant to each key research question.",
+      "For each theme, extract the most relevant quotes and paraphrase the key point made by the interviewee.",
+      "Identify any unexpected or emerging topics that arose outside the interview guide.",
+      "Compile the insight summary with: interview context (date, interviewee role, duration), key findings per research question, notable quotes (anonymised if required), and emerging topics."
+    ],
+    "toolsAllowed": "Otter.ai / AssemblyAI / OpenAI Whisper (SaaS / open-source transcription); Dovetail / EnjoyHQ (SaaS qualitative analysis); Notion AI (SaaS); Zoom auto-transcription (SaaS)",
+    "outputFormat": "Interview insight summary (Word, Notion, or PDF) containing: interview context header, key findings organised by research question, supporting quotes per finding (anonymised), emerging topics section, and researcher notes on data quality.",
+    "constraintsList": [
+      "Interviewee identities must be anonymised in outputs unless explicit consent for attribution was obtained.",
+      "Transcripts and summaries must be stored in approved, access-controlled repositories.",
+      "The insight summary is an analytical output — do not present inferences as direct quotations."
+    ],
+    "failureHandling": "If transcription quality is poor (e.g. background noise, multiple overlapping speakers), flag the affected sections and request manual review. If the recording cannot be processed, note the failure and request the researcher to provide their manual notes instead.",
+    "skillExamples": [
+      "Input: 45-minute recording of a senior citizen interview on digital banking adoption, interview guide with 8 questions. Output: Insight summary with findings on 8 themes, 12 supporting quotes, and 2 emerging topics (fear of scams, preference for bank branch support) not in the original guide."
+    ]
   },
   {
     "id": "SG-31",
     "name": "Cross-Agency Availability Finder",
     "category": "Scheduling & Coordination",
     "agency": "Cross-agency",
-    "description": "Identifies optimal times for multi-agency meetings by checking stakeholder calendars.",
+    "description": "Identify optimal times for multi-agency meetings by checking stakeholder calendars — reducing the time spent on manual scheduling coordination.",
     "primaryUseCase": "Coordinate meetings",
     "targetJobRoles": "Project Managers; Interagency Coordinators; Operations Managers",
     "efficiencyGain": "35% faster scheduling",
     "complexityLevel": "Medium",
     "dependencies": "Calendar integration; meeting management system",
     "saasDependencies": "Microsoft 365 Calendar API (SaaS — widely used across Singapore Government); Google Calendar API (SaaS); Calendly (SaaS); When2meet (free SaaS); Microsoft Graph API (SaaS)",
-    "implementabilityNote": "Microsoft 365 is the standard productivity suite across Singapore Government agencies and has a publicly documented API (Microsoft Graph). Calendar data at the free/busy level is accessible without proprietary internal systems."
+    "implementabilityNote": "Microsoft 365 is the standard productivity suite across Singapore Government agencies and has a publicly documented API (Microsoft Graph). Calendar data at the free/busy level is accessible without proprietary internal systems.",
+    "whenToUse": "When a project manager or interagency coordinator needs to schedule a meeting with participants from multiple agencies and wants to find mutually available time slots without manual back-and-forth.",
+    "inputs": [
+      "List of meeting participants (names and email addresses)",
+      "Desired meeting duration",
+      "Preferred meeting window (date range and time range, e.g. within the next 2 weeks, 9am–5pm SGT)",
+      "Meeting title and brief agenda (for the invite)"
+    ],
+    "instructions": [
+      "Connect to the Microsoft 365 Calendar API (Microsoft Graph) using the configured credentials.",
+      "Query the free/busy status for each participant within the specified meeting window.",
+      "Identify all time slots within the window where all participants are free for the required duration.",
+      "If no fully free slots exist, identify slots where the majority of participants are free and flag the unavailable participants.",
+      "Rank the available slots by suitability (prefer core business hours, avoid early/late slots unless no alternative exists).",
+      "Present the top 3 recommended time slots with participant availability confirmed.",
+      "On selection of a slot, draft and send the meeting invite with the provided title and agenda to all participants."
+    ],
+    "toolsAllowed": "Microsoft 365 Calendar API / Microsoft Graph (SaaS); Google Calendar API (SaaS); Calendly (SaaS); When2meet (free SaaS)",
+    "outputFormat": "Availability report (email or chat message) listing: top 3 recommended meeting slots with participant availability status per slot, and a confirmation prompt to proceed with invite creation for the selected slot.",
+    "constraintsList": [
+      "Only free/busy status is accessed — detailed calendar content is not read or stored.",
+      "Calendar API access requires authorised credentials; do not use shared or administrative accounts without appropriate permissions.",
+      "If a participant has no Microsoft 365 / Google Calendar integration, flag them as unknown availability."
+    ],
+    "failureHandling": "If the Calendar API is unavailable, fall back to a Calendly or When2meet link for manual availability collection. If no mutually free slot exists in the window, extend the search window by one additional week and alert the coordinator.",
+    "skillExamples": [
+      "Input: 6 participants from 4 agencies, 1-hour meeting, within next 10 business days. Output: 3 recommended slots identified, with Slot 1 (Tuesday 10am) confirmed free for all 6 participants as top recommendation."
+    ]
   },
   {
     "id": "SG-10",
     "name": "Plain Language Translator",
     "category": "Communication & Engagement",
     "agency": "Cross-agency",
-    "description": "Converts complex policy language into simple explanations for citizen communication.",
+    "description": "Convert complex policy language into simple, accessible explanations for citizen communication — enabling faster creation of plain English content.",
     "primaryUseCase": "Create accessible content",
     "targetJobRoles": "Frontline Service Officers; Digital Ambassadors; Community Engagement Officers",
     "efficiencyGain": "45% faster content creation",
     "complexityLevel": "Low",
     "dependencies": "Policy documents; language database",
     "saasDependencies": "Singapore government policy documents (publicly published on agency websites); OpenAI / Anthropic / Google Gemini API (SaaS LLMs); Grammarly API (SaaS); readability scoring libraries (open-source: textstat, py-readability-metrics)",
-    "implementabilityNote": "Policy source documents are publicly available. Plain language transformation runs entirely on SaaS LLM APIs and open-source readability libraries. No internal systems needed whatsoever — the lowest-complexity skill on the original list."
+    "implementabilityNote": "Policy source documents are publicly available. Plain language transformation runs entirely on SaaS LLM APIs and open-source readability libraries. No internal systems needed whatsoever — the lowest-complexity skill on the original list.",
+    "whenToUse": "When a frontline service officer, digital ambassador, or communications officer needs to explain a government policy, regulation, or procedure to citizens in plain language, without technical or legal jargon.",
+    "inputs": [
+      "Source policy document, regulation, or procedure text (PDF, Word, or pasted text)",
+      "Target audience description (e.g. general public, elderly residents, low-literacy readers)",
+      "Desired output format (short summary, FAQ answer, website copy, brochure text)",
+      "Target reading level (e.g. Primary 6 level, general adult level)"
+    ],
+    "instructions": [
+      "Read the source policy text fully to understand the key requirements, entitlements, or procedures it describes.",
+      "Identify the key points a citizen needs to know (who this applies to, what they need to do, what they will receive, and any important deadlines or exceptions).",
+      "Rewrite the content in plain language appropriate to the target audience and reading level: use short sentences (average under 20 words), replace jargon with everyday equivalents, use active voice, structure with the most important information first.",
+      "Run a readability check using a readability scoring library (textstat or py-readability-metrics) to verify the output meets the target reading level.",
+      "Review for accuracy — ensure no policy requirements have been inadvertently simplified away.",
+      "Output the plain language version in the requested format."
+    ],
+    "toolsAllowed": "Singapore government policy documents (public, agency websites); OpenAI / Anthropic / Google Gemini API (SaaS LLMs); Grammarly API (SaaS); readability scoring libraries — textstat, py-readability-metrics (open-source)",
+    "outputFormat": "Plain language content in the specified format (summary paragraph / FAQ answer / website copy / brochure text), with a readability score note and a flag for any policy accuracy review points requiring subject matter expert confirmation.",
+    "constraintsList": [
+      "Plain language outputs must be reviewed by the policy or communications team for accuracy before publication.",
+      "Do not simplify away legal obligations or eligibility conditions — flag these for human verification if simplification could be misleading.",
+      "Do not publish outputs without appropriate clearance from the owning agency."
+    ],
+    "failureHandling": "If the source document cannot be parsed, request a copy-paste of the relevant text. If the readability target cannot be achieved without risking accuracy loss, flag the tension to the reviewer and present both a simplified and an annotated accurate version.",
+    "skillExamples": [
+      "Input: CPF Ordinary Account withdrawal policy (legal text, 800 words). Output: 150-word plain English summary at general adult level explaining who can withdraw, how much, and how to apply — with 3 accuracy review points flagged for the CPF Board team."
+    ]
   },
   {
     "id": "SG-11",
     "name": "Multi-Language Response Generator",
     "category": "Communication & Engagement",
     "agency": "Cross-agency",
-    "description": "Creates culturally appropriate responses in multiple languages for diverse communities.",
+    "description": "Create culturally appropriate responses in multiple languages for diverse communities — enabling faster multilingual citizen communication.",
     "primaryUseCase": "Serve multilingual citizens",
     "targetJobRoles": "Community Workers; Frontline Officers; Service Centre Staff",
     "efficiencyGain": "60% faster multilingual responses",
     "complexityLevel": "Medium",
     "dependencies": "Translation database; cultural guidelines",
     "saasDependencies": "Google Translate API (SaaS); DeepL API (SaaS); Meta NLLB (open-source multilingual model); Azure Cognitive Services Translator (SaaS); cultural context via publicly available community guides",
-    "implementabilityNote": "Translation is entirely served by SaaS APIs (Google, DeepL, Azure) or open-source models (Meta NLLB). Cultural guidelines are available via public community resources. No internal government translation database required."
+    "implementabilityNote": "Translation is entirely served by SaaS APIs (Google, DeepL, Azure) or open-source models (Meta NLLB). Cultural guidelines are available via public community resources. No internal government translation database required.",
+    "whenToUse": "When a frontline service officer, community worker, or service centre staff member needs to communicate a government message, service information, or response to a citizen in a language other than English, ensuring cultural appropriateness.",
+    "inputs": [
+      "Source content in English (the message, information, or response to be translated)",
+      "Target language(s) (e.g. Mandarin, Malay, Tamil, Bengali)",
+      "Target audience context (e.g. elderly Mandarin-speaking resident, Malay-speaking family)",
+      "Tone and register required (formal / conversational / simple)"
+    ],
+    "instructions": [
+      "Read the English source content and confirm the key message, tone, and any culturally sensitive elements.",
+      "Translate the content into each requested language using the configured translation API (Google Translate API / DeepL API / Azure Cognitive Services Translator).",
+      "For languages with significant cultural context requirements (e.g. Mandarin for elderly audience, formal Malay), apply a secondary review step using the Meta NLLB model or cultural context guidelines to check for culturally appropriate phrasing.",
+      "Adjust register as specified — ensure formal language for official notices, conversational language for community messaging.",
+      "Flag any concepts that do not translate directly (e.g. specific government programme names) and suggest localised explanations.",
+      "Output the translated content for each language, clearly labelled."
+    ],
+    "toolsAllowed": "Google Translate API (SaaS); DeepL API (SaaS); Meta NLLB (open-source multilingual model); Azure Cognitive Services Translator (SaaS); cultural context via publicly available community guides",
+    "outputFormat": "Translated content document (Word, email, or PDF) with each language version clearly labelled, a note on any untranslatable terms or concepts that were adapted, and any items flagged for native speaker review.",
+    "constraintsList": [
+      "Machine translation output must be reviewed by a native speaker or bilingual officer for any high-stakes communications (e.g. legal notices, enforcement letters, health advisories).",
+      "Government programme names and legal terms should be transliterated rather than translated unless an official translated name exists.",
+      "Cultural appropriateness review is required for communications targeted at elderly or vulnerable communities."
+    ],
+    "failureHandling": "If a translation API is unavailable, fall back to the alternative API (Google → DeepL → Azure). If a language is not supported by available APIs, flag the gap and recommend engaging a professional translator.",
+    "skillExamples": [
+      "Input: English notice about a community health screening programme, Mandarin and Tamil translations required, conversational register for elderly audience. Output: Mandarin version (simplified characters, senior-friendly phrasing) and Tamil version, with a note that 'HealthierSG' was transliterated and flagged for native speaker review."
+    ]
   },
   {
     "id": "SG-13",
     "name": "Feedback Sentiment Analyzer",
     "category": "Communication & Engagement",
     "agency": "Cross-agency",
-    "description": "Analyzes citizen feedback to identify satisfaction gaps and service improvement areas.",
+    "description": "Analyse citizen feedback to identify satisfaction gaps and service improvement areas — enabling faster and more systematic analysis of service feedback.",
     "primaryUseCase": "Improve service delivery",
     "targetJobRoles": "Operations Officers; Service Delivery Managers; Policy Officers",
     "efficiencyGain": "40% faster feedback analysis",
     "complexityLevel": "Medium",
     "dependencies": "Feedback collection system; sentiment analysis model",
     "saasDependencies": "SurveyMonkey / Typeform / FormSG (SaaS/open-source); Hugging Face sentiment models (open-source); VADER / TextBlob (open-source NLP); Google Forms (SaaS); Medallia / Qualtrics (SaaS CX platform)",
-    "implementabilityNote": "FormSG (open-source SaaS) handles collection. Sentiment analysis runs on open-source NLP libraries (Hugging Face, VADER). No proprietary government feedback system required — works with any web-collected feedback export."
+    "implementabilityNote": "FormSG (open-source SaaS) handles collection. Sentiment analysis runs on open-source NLP libraries (Hugging Face, VADER). No proprietary government feedback system required — works with any web-collected feedback export.",
+    "whenToUse": "When an operations officer, service delivery manager, or policy officer has collected citizen feedback (from surveys, feedback forms, or service touchpoints) and needs to analyse the sentiment and identify themes for service improvement.",
+    "inputs": [
+      "Citizen feedback dataset (exported from SurveyMonkey / Typeform / FormSG / Google Forms, or as a CSV)",
+      "Service name or touchpoint the feedback relates to",
+      "Analysis objectives (e.g. identify top satisfaction drivers and pain points, track sentiment trend vs prior period)",
+      "Prior period baseline sentiment data (optional, for trend comparison)"
+    ],
+    "instructions": [
+      "Load the feedback dataset and validate the data (check for nulls, duplicates, and encoding issues).",
+      "Run sentiment analysis on each feedback entry using the configured model (Hugging Face sentiment model or VADER/TextBlob for simpler datasets).",
+      "Assign a sentiment label (positive / neutral / negative) and a confidence score to each entry.",
+      "Extract key themes from the feedback using topic modelling or keyword clustering.",
+      "Map each feedback entry to the closest theme.",
+      "Calculate aggregate sentiment scores per theme.",
+      "If prior period data is provided, calculate sentiment trend (improvement / decline / stable) per theme.",
+      "Identify the top 3 satisfaction drivers (themes with highest positive sentiment) and top 3 pain points (themes with highest negative sentiment).",
+      "Compile the analysis report with a summary, theme-level sentiment breakdown, trend analysis, and recommended improvement focus areas."
+    ],
+    "toolsAllowed": "SurveyMonkey / Typeform / FormSG (SaaS/open-source); Hugging Face sentiment models (open-source); VADER / TextBlob (open-source NLP); Google Forms (SaaS); Medallia / Qualtrics (SaaS CX platform)",
+    "outputFormat": "Sentiment analysis report (PDF or dashboard) containing: overall sentiment summary, theme-level breakdown with sentiment scores, trend comparison vs prior period, top satisfaction drivers, top pain points, and recommended improvement focus areas.",
+    "constraintsList": [
+      "Feedback data must be anonymised before analysis — do not include personally identifiable information in the report.",
+      "Sentiment scores are algorithmic outputs — significant findings should be validated with qualitative review of underlying feedback entries.",
+      "The report must be stored in an access-controlled environment if it contains service-level insights that are not for public release."
+    ],
+    "failureHandling": "If the feedback dataset is too small for statistically meaningful analysis (under 30 responses), flag the limitation and present a qualitative summary instead of quantitative scores. If the sentiment model returns low confidence for a large proportion of entries, recommend manual coding for those entries.",
+    "skillExamples": [
+      "Input: 450 feedback responses from a service centre over Q1, prior quarter baseline. Output: Report showing overall sentiment improved from 58% positive to 71% positive, top pain point is 'waiting time' (declining trend), and top satisfaction driver is 'staff helpfulness' (improving trend)."
+    ]
   },
   {
     "id": "SG-23",
     "name": "Training Material Creator",
     "category": "Content & Documentation",
     "agency": "Cross-agency",
-    "description": "Develops training modules and procedure guides from policy documents for officer upskilling.",
+    "description": "Develop training modules and procedure guides from policy documents for officer upskilling — accelerating training content development.",
     "primaryUseCase": "Create training content",
     "targetJobRoles": "Training Officers; HR Officers; Workforce Development Officers",
     "efficiencyGain": "55% faster content development",
     "complexityLevel": "Medium",
     "dependencies": "Training framework; policy documents",
     "saasDependencies": "Canva (SaaS); Articulate 360 / Rise (SaaS eLearning authoring); Notion (SaaS); publicly available policy documents (agency websites); Claude / GPT-4 API (SaaS LLM); Gamma.app (SaaS presentation AI)",
-    "implementabilityNote": "Policy source documents are public. Content generation uses SaaS LLMs. eLearning authoring (Articulate, Rise) and design tools (Canva) are standard SaaS. No internal LMS or training database required to generate the content — only to host it."
+    "implementabilityNote": "Policy source documents are public. Content generation uses SaaS LLMs. eLearning authoring (Articulate, Rise) and design tools (Canva) are standard SaaS. No internal LMS or training database required to generate the content — only to host it.",
+    "whenToUse": "When a training officer, HR officer, or workforce development officer needs to create training modules or procedure guides from existing policy documents, without having to write the content from scratch.",
+    "inputs": [
+      "Source policy document(s) or procedure guides (PDF, Word, or publicly published agency documents)",
+      "Training objectives (what officers should know or be able to do after the training)",
+      "Target audience (e.g. new frontline officers, IT compliance engineers, case workers)",
+      "Preferred output format (slide deck / eLearning module / written guide / facilitator guide)",
+      "Approximate length or duration target"
+    ],
+    "instructions": [
+      "Read the source policy documents and identify the content relevant to the training objectives.",
+      "Map the content to a learning structure: key concepts, step-by-step procedures, common scenarios, and assessments.",
+      "Draft the training content for each section in language appropriate to the target audience — plain and direct for frontline officers, technically precise for IT engineers.",
+      "For slide decks: create a structured slide outline with one key message per slide, supported by concise bullet points and suggested visuals or diagrams.",
+      "For written guides: use numbered steps for procedures, callout boxes for important rules or warnings, and examples to illustrate abstract concepts.",
+      "Include a short knowledge check or quiz at the end of each module with 3–5 questions.",
+      "Output the draft training material in the requested format using the appropriate tool (Canva for visuals, Articulate/Rise for eLearning, Word/Google Docs for written guides)."
+    ],
+    "toolsAllowed": "Canva (SaaS); Articulate 360 / Rise (SaaS eLearning authoring); Notion (SaaS); publicly available policy documents (agency websites); Claude / GPT-4 API (SaaS LLM); Gamma.app (SaaS presentation AI)",
+    "outputFormat": "Training material in the specified format: slide deck (PowerPoint / Canva), eLearning module (Articulate/Rise export), or written guide (PDF/Word) — with knowledge check questions appended, and a facilitator notes section if the format is instructor-led.",
+    "constraintsList": [
+      "All training content must be reviewed and approved by the owning policy or HR team before use in officer training.",
+      "Do not include information from restricted or confidential policy documents without appropriate clearance.",
+      "Knowledge check questions must be validated by a subject matter expert to ensure accuracy."
+    ],
+    "failureHandling": "If the source policy documents are insufficient to cover the training objectives, flag the content gap and request additional reference materials. If the eLearning authoring tool is unavailable, fall back to a written guide format.",
+    "skillExamples": [
+      "Input: IM8 data governance policy, training objective: new IT officers understand data classification requirements, target: 30-minute eLearning module. Output: 6-section eLearning module covering classification levels, handling requirements, and breach procedures — with 5-question knowledge check and facilitator guide."
+    ]
   },
   {
     "id": "SG-25",
     "name": "FAQ Generation from Policies",
     "category": "Citizen-Facing Service",
     "agency": "Cross-agency",
-    "description": "Creates frequently asked questions content from government policies for citizens.",
+    "description": "Create frequently asked questions content from government policies for citizens — enabling faster publication of accessible citizen resources.",
     "primaryUseCase": "Publish citizen resources",
     "targetJobRoles": "Digital Ambassadors; Frontline Service Officers; Communications Officers",
     "efficiencyGain": "50% faster FAQ creation",
     "complexityLevel": "Low",
     "dependencies": "Policy documents; FAQ template",
     "saasDependencies": "Publicly published government policy documents (e.g. cpf.gov.sg, hdb.gov.sg, moh.gov.sg); SaaS LLM API (Claude / GPT-4); Notion / Confluence (SaaS output); isomer.gov.sg CMS (open-source Singapore Gov CMS)",
-    "implementabilityNote": "All input documents are publicly available on government websites. FAQ generation is a pure LLM task on public text. Output goes to standard SaaS or Isomer (open-source gov CMS). Easiest skill to implement on this entire list — zero internal systems needed."
+    "implementabilityNote": "All input documents are publicly available on government websites. FAQ generation is a pure LLM task on public text. Output goes to standard SaaS or Isomer (open-source gov CMS). Easiest skill to implement on this entire list — zero internal systems needed.",
+    "whenToUse": "When a digital ambassador, frontline service officer, or communications officer needs to create FAQ content for a government website, service portal, or citizen communications from a policy document — without drafting from scratch.",
+    "inputs": [
+      "Source policy document or policy web page URL (e.g. CPF.gov.sg, HDB.gov.sg, MOH.gov.sg)",
+      "Target audience (e.g. general public, businesses, elderly citizens)",
+      "Number of FAQs to generate (or 'as many as needed')",
+      "Tone (formal / conversational)",
+      "Existing FAQ list (optional, for deduplication and gap-filling)"
+    ],
+    "instructions": [
+      "Load the source policy document or fetch the policy web page content.",
+      "Read the policy and identify the most likely questions a citizen would have — focus on eligibility, entitlements, application process, timelines, exceptions, and contact points.",
+      "If an existing FAQ list is provided, identify gaps and avoid duplicating covered questions.",
+      "Draft each FAQ in question-and-answer format: question phrased in natural citizen language ('How do I...?', 'Am I eligible...?', 'What happens if...?'); answer concise and direct (2–4 sentences) in plain language appropriate to the target audience.",
+      "Group FAQs by logical theme (e.g. Eligibility, Application Process, Payment, Appeals).",
+      "Apply a readability check to confirm answers are at an appropriate reading level.",
+      "Output the FAQ set, organised by theme, ready for review and publication."
+    ],
+    "toolsAllowed": "Publicly published government policy documents (e.g. cpf.gov.sg, hdb.gov.sg, moh.gov.sg); SaaS LLM API (Claude / GPT-4); Notion / Confluence (SaaS output); isomer.gov.sg CMS (open-source Singapore Gov CMS)",
+    "outputFormat": "FAQ document (Word, Notion page, or CMS-ready format) with FAQs organised by theme, each with a clearly worded question and a plain language answer of 2–4 sentences — ready for review and publication on the agency website or service portal.",
+    "constraintsList": [
+      "All FAQ content must be reviewed and approved by the owning policy or communications team before publication.",
+      "Do not create FAQs that involve legal advice or that commit the government to specific interpretations of law — flag these for legal review.",
+      "Ensure all answers are accurate as of the policy version used; note the policy version and date in the document footer."
+    ],
+    "failureHandling": "If the source policy document is unclear or contradictory on a point, draft the FAQ with a placeholder note flagging the ambiguity for the policy team to resolve. If the policy web page cannot be fetched, request the user to provide the text directly.",
+    "skillExamples": [
+      "Input: CPF Retirement Sum Scheme policy page, general public audience, conversational tone, 15 FAQs. Output: 15 FAQs in 4 themes (What is the Retirement Sum Scheme, Eligibility, How to Apply, Receiving Payouts) — reviewed by CPF Board communications team before publication on CPF.gov.sg."
+    ]
   }
 ]
