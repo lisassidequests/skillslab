@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowLeft, Download } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Download, FileText } from "lucide-react";
 import type { Skill } from "@/types";
 import { categoryColor } from "@/lib/skills";
 
@@ -84,27 +84,95 @@ function slugifyFilename(name: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function renderMarkdownLine(line: string, key: number) {
+  if (line === "") {
+    return <div key={key}>&nbsp;</div>;
+  }
+  if (line === "---") {
+    return (
+      <div key={key} className="text-slate-400">
+        {line}
+      </div>
+    );
+  }
+  if (line.startsWith("## ")) {
+    return (
+      <div key={key} className="text-purple-700 font-semibold mt-2">
+        {line}
+      </div>
+    );
+  }
+  if (line.startsWith("# ")) {
+    return (
+      <div key={key} className="text-blue-700 font-bold">
+        {line}
+      </div>
+    );
+  }
+  const numbered = line.match(/^(\d+)\.\s(.*)$/);
+  if (numbered) {
+    return (
+      <div key={key} className="text-slate-700">
+        <span className="text-emerald-600 font-semibold">{numbered[1]}.</span>{" "}
+        {numbered[2]}
+      </div>
+    );
+  }
+  if (line.startsWith("- ")) {
+    return (
+      <div key={key} className="text-slate-700">
+        <span className="text-amber-600">-</span> {line.slice(2)}
+      </div>
+    );
+  }
+  const frontmatter = line.match(/^([a-z_]+):\s?(.*)$/);
+  if (frontmatter) {
+    return (
+      <div key={key}>
+        <span className="text-purple-600">{frontmatter[1]}:</span>{" "}
+        <span className="text-slate-700">{frontmatter[2]}</span>
+      </div>
+    );
+  }
   return (
-    <div>
-      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
-        {title}
-      </h3>
-      {children}
+    <div key={key} className="text-slate-700">
+      {line}
+    </div>
+  );
+}
+
+function SkillMarkdownPreview({ markdown }: { markdown: string }) {
+  const lines = markdown.split("\n");
+  return (
+    <div className="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
+      <div className="px-5 py-3 bg-white border-b border-slate-200 flex items-center gap-2">
+        <FileText size={14} className="text-slate-400" />
+        <p className="text-sm font-mono text-slate-600">skill.md</p>
+      </div>
+      <div className="px-5 py-4 text-[13px] leading-6 font-mono whitespace-pre-wrap break-words">
+        {lines.map((line, i) => renderMarkdownLine(line, i))}
+      </div>
     </div>
   );
 }
 
 export default function SkillDetail({ skill }: SkillDetailProps) {
+  const router = useRouter();
+  const markdown = buildMarkdown(skill);
+  const tagClass = categoryColor(skill.category);
+
+  const handleBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/skills");
+    }
+  };
+
   const download = () => {
-    const md = buildMarkdown(skill);
-    const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+    const blob = new Blob([markdown], {
+      type: "text/markdown;charset=utf-8",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -115,130 +183,44 @@ export default function SkillDetail({ skill }: SkillDetailProps) {
     URL.revokeObjectURL(url);
   };
 
-  const tagClass = categoryColor(skill.category);
-
   return (
     <div className="bg-white border-2 border-gray-200 rounded-xl p-6 md:p-8">
-      <Link
-        href="/skills"
+      <button
+        onClick={handleBack}
         className="inline-flex items-center gap-1 text-gray-500 hover:text-gray-700 mb-6 text-sm"
       >
         <ArrowLeft size={15} /> Back to Library
-      </Link>
+      </button>
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-8 md:gap-12">
-        {/* ── Left: Skill write-up (60%) ── */}
-        <div className="md:col-span-3 space-y-6">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 leading-tight">
-              {skill.name}
-            </h1>
-            <span
-              className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${tagClass}`}
-            >
-              {skill.category}
-            </span>
-          </div>
+      <div className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 leading-tight">
+          {skill.name}
+        </h1>
+        <span
+          className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${tagClass}`}
+        >
+          {skill.category}
+        </span>
+        <p className="text-gray-700 leading-relaxed mt-4 max-w-3xl">
+          {skill.description}
+        </p>
+      </div>
 
-          <p className="text-gray-700 leading-relaxed">{skill.description}</p>
-
-          {skill.whenToUse && (
-            <Section title="When to Use">
-              <p className="text-gray-600 text-sm leading-relaxed">
-                {skill.whenToUse}
-              </p>
-            </Section>
-          )}
-
-          {skill.inputs && skill.inputs.length > 0 && (
-            <Section title="Inputs">
-              <ul className="space-y-1">
-                {skill.inputs.map((input, i) => (
-                  <li key={i} className="flex gap-2 text-sm text-gray-600">
-                    <span className="text-gray-300 mt-0.5">—</span>
-                    <span>{input}</span>
-                  </li>
-                ))}
-              </ul>
-            </Section>
-          )}
-
-          {skill.instructions && skill.instructions.length > 0 && (
-            <Section title="Instructions">
-              <ol className="space-y-2">
-                {skill.instructions.map((step, i) => (
-                  <li key={i} className="flex gap-3 text-sm text-gray-600">
-                    <span className="text-blue-400 font-bold shrink-0 w-5 text-right">
-                      {i + 1}.
-                    </span>
-                    <span className="leading-relaxed">{step}</span>
-                  </li>
-                ))}
-              </ol>
-            </Section>
-          )}
-
-          {skill.outputFormat && (
-            <Section title="Output Format">
-              <p className="text-gray-600 text-sm leading-relaxed">
-                {skill.outputFormat}
-              </p>
-            </Section>
-          )}
-
-          {skill.constraintsList && skill.constraintsList.length > 0 && (
-            <Section title="Constraints">
-              <ul className="space-y-1">
-                {skill.constraintsList.map((c, i) => (
-                  <li key={i} className="flex gap-2 text-sm text-gray-600">
-                    <span className="text-amber-400 mt-0.5 shrink-0">⚠</span>
-                    <span>{c}</span>
-                  </li>
-                ))}
-              </ul>
-            </Section>
-          )}
-
-          {skill.failureHandling && (
-            <Section title="Failure Handling">
-              <p className="text-gray-600 text-sm leading-relaxed">
-                {skill.failureHandling}
-              </p>
-            </Section>
-          )}
-
-          {skill.skillExamples && skill.skillExamples.length > 0 && (
-            <Section title="Examples">
-              <div className="space-y-3">
-                {skill.skillExamples.map((ex, i) => (
-                  <div
-                    key={i}
-                    className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-600 leading-relaxed"
-                  >
-                    {ex}
-                  </div>
-                ))}
-              </div>
-            </Section>
-          )}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-8 md:gap-10">
+        {/* ── Left: Skill preview (60%) ── */}
+        <div className="md:col-span-3">
+          <SkillMarkdownPreview markdown={markdown} />
         </div>
 
         {/* ── Right: Metadata panel (40%) ── */}
         <div className="md:col-span-2 space-y-5">
-          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-lg p-4">
-            <p className="text-xs font-bold text-emerald-700 uppercase tracking-widest mb-1">
-              Expected Efficiency Gain
-            </p>
-            <p className="text-lg font-bold text-emerald-700">
-              {skill.efficiencyGain}
-            </p>
-          </div>
-
           <div>
             <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">
               Complexity Level
             </p>
-            <p className="text-gray-900 font-semibold">{skill.complexityLevel}</p>
+            <p className="text-gray-900 font-semibold">
+              {skill.complexityLevel}
+            </p>
           </div>
 
           <div>
@@ -275,7 +257,7 @@ export default function SkillDetail({ skill }: SkillDetailProps) {
               onClick={download}
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
             >
-              <Download size={18} /> Download Skill
+              <Download size={18} /> Download skill.md
             </button>
           </div>
         </div>
