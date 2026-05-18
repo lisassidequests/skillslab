@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   X,
   Loader2,
@@ -93,6 +93,13 @@ export default function AddSkillModal({
   const [errorMsg, setErrorMsg] = useState("");
   const [uploading, setUploading] = useState(false);
   const [newSkillName, setNewSkillName] = useState("");
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user?.email) setEmail(user.email);
+    });
+  }, []);
 
   const canDismiss = step !== "loading" && step !== "uploading";
 
@@ -223,21 +230,12 @@ export default function AddSkillModal({
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  Your work email
-                </label>
-                <p className="text-xs text-gray-500 mb-2">
-                  Your email will be shown on the skill card
-                </p>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@agency.gov.sg"
-                  required
-                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition"
-                />
+              <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-xs text-gray-600">
+                Will be submitted as{" "}
+                <span className="font-semibold text-gray-800">
+                  {email || "loading..."}
+                </span>
+                {" — "}shown on the skill card.
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
@@ -250,7 +248,7 @@ export default function AddSkillModal({
                 </button>
                 <button
                   type="submit"
-                  disabled={!text.trim() || !email.trim()}
+                  disabled={!text.trim() || !email}
                   className="px-5 py-2 bg-teal-600 hover:bg-teal-700 disabled:bg-teal-300 text-white text-sm font-semibold rounded-lg transition"
                 >
                   Analyse skill →
