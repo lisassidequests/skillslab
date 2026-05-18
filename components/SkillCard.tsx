@@ -1,13 +1,21 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ThumbsUp } from "lucide-react";
 import type { Skill } from "@/types";
 import { categoryColor } from "@/lib/skills";
 
 interface SkillCardProps {
   skill: Skill;
+  upvoteCount: number;
+  hasUpvoted: boolean;
+  onUpvote: (skillId: string) => void;
 }
 
-export default function SkillCard({ skill }: SkillCardProps) {
+export default function SkillCard({
+  skill,
+  upvoteCount,
+  hasUpvoted,
+  onUpvote,
+}: SkillCardProps) {
   const tagClass = categoryColor(skill.category);
   const shortCategory = skill.category.split(" & ")[0];
 
@@ -36,9 +44,27 @@ export default function SkillCard({ skill }: SkillCardProps) {
         </p>
       )}
 
-      <span className="mt-auto text-blue-600 group-hover:text-blue-700 font-semibold text-xs flex items-center gap-1">
-        View Details <ArrowRight size={12} />
-      </span>
+      <div className="mt-auto flex items-center justify-between">
+        <span className="text-blue-600 group-hover:text-blue-700 font-semibold text-xs flex items-center gap-1">
+          View Details <ArrowRight size={12} />
+        </span>
+
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onUpvote(skill.id);
+          }}
+          className={`flex items-center gap-1.5 text-xs font-semibold px-2 py-1 rounded-md transition ${
+            hasUpvoted
+              ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
+              : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+          }`}
+        >
+          <ThumbsUp size={12} className={hasUpvoted ? "fill-blue-600" : ""} />
+          {upvoteCount}
+        </button>
+      </div>
     </Link>
   );
 }

@@ -1,12 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Download, FileText } from "lucide-react";
+import { ArrowLeft, Download, FileText, ThumbsUp } from "lucide-react";
 import type { Skill } from "@/types";
 import { categoryColor } from "@/lib/skills";
+import { createClient } from "@/lib/supabase/client";
 
 interface SkillDetailProps {
   skill: Skill;
+  initialUpvoteCount: number;
+  initialHasUpvoted: boolean;
 }
 
 function buildMarkdown(skill: Skill): string {
@@ -154,10 +158,18 @@ function SkillMarkdownPreview({ markdown }: { markdown: string }) {
   );
 }
 
-export default function SkillDetail({ skill }: SkillDetailProps) {
+export default function SkillDetail({
+  skill,
+  initialUpvoteCount,
+  initialHasUpvoted,
+}: SkillDetailProps) {
   const router = useRouter();
   const markdown = buildMarkdown(skill);
   const tagClass = categoryColor(skill.category);
+
+  const [upvoteCount, setUpvoteCount] = useState(initialUpvoteCount);
+  const [hasUpvoted, setHasUpvoted] = useState(initialHasUpvoted);
+  const [isUpvoting, setIsUpvoting] = useState(false);
 
   const handleBack = () => {
     if (typeof window !== "undefined" && window.history.length > 1) {
@@ -165,6 +177,34 @@ export default function SkillDetail({ skill }: SkillDetailProps) {
     } else {
       router.push("/skills");
     }
+  };
+
+  const handleUpvote = async () => {
+    if (isUpvoting) return;
+    setIsUpvoting(true);
+
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    if (hasUpvoted) {
+      setHasUpvoted(false);
+      setUpvoteCount((c) => c - 1);
+      await supabase
+        .from("upvotes")
+        .delete()
+        .match({ user_id: user.id, skill_id: skill.id });
+    } else {
+      setHasUpvoted(true);
+      setUpvoteCount((c) => c + 1);
+      await supabase
+        .from("upvotes")
+        .insert({ user_id: user.id, skill_id: skill.id });
+    }
+
+    setIsUpvoting(false);
   };
 
   const download = () => {
@@ -191,9 +231,26 @@ export default function SkillDetail({ skill }: SkillDetailProps) {
       </button>
 
       <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 leading-tight">
-          {skill.name}
-        </h1>
+        <div className="flex items-start justify-between gap-4 mb-3">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">
+            {skill.name}
+          </h1>
+          <button
+            onClick={handleUpvote}
+            disabled={isUpvoting}
+            className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition border-2 ${
+              hasUpvoted
+                ? "bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100"
+                : "bg-white border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700"
+            }`}
+          >
+            <ThumbsUp
+              size={15}
+              className={hasUpvoted ? "fill-blue-600" : ""}
+            />
+            <span>{upvoteCount}</span>
+          </button>
+        </div>
         <span
           className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${tagClass}`}
         >

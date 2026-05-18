@@ -1,25 +1,37 @@
-import type { Skill } from "@/types";
 import SkillCard from "./SkillCard";
+import type { Skill } from "@/types";
 
 interface SkillGridProps {
   skills: Skill[];
+  upvoteCounts: Record<string, number>;
+  userUpvotes: Set<string>;
+  onUpvote: (skillId: string) => void;
 }
 
-export default function SkillGrid({ skills }: SkillGridProps) {
+export default function SkillGrid({
+  skills,
+  upvoteCounts,
+  userUpvotes,
+  onUpvote,
+}: SkillGridProps) {
   if (skills.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-500 text-lg">
-          No skills match the current filters.
-        </p>
-      </div>
+      <p className="text-gray-400 text-sm py-12 text-center">
+        No skills match your search.
+      </p>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {skills.map((skill) => (
-        <SkillCard key={skill.id} skill={skill} />
+        <SkillCard
+          key={skill.id}
+          skill={skill}
+          upvoteCount={upvoteCounts[skill.id] ?? 0}
+          hasUpvoted={userUpvotes.has(skill.id)}
+          onUpvote={onUpvote}
+        />
       ))}
     </div>
   );
