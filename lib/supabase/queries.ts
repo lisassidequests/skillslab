@@ -20,6 +20,7 @@ export type DbSkill = {
   constraints_list: string[] | null;
   failure_handling: string | null;
   skill_examples: string[] | null;
+  submitted_by: string | null;
 };
 
 export function mapSkill(row: DbSkill): Skill {
@@ -43,5 +44,6 @@ export function mapSkill(row: DbSkill): Skill {
     constraintsList: row.constraints_list ?? undefined,
     failureHandling: row.failure_handling ?? undefined,
     skillExamples: row.skill_examples ?? undefined,
+    submittedBy: row.submitted_by ?? undefined,
   };
 }

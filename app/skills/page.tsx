@@ -4,10 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import SearchBar from "@/components/SearchBar";
 import FilterDropdown from "@/components/FilterDropdown";
 import SkillGrid from "@/components/SkillGrid";
+import AddSkillModal from "@/components/AddSkillModal";
 import { filterSkills, getAllCategories } from "@/lib/skills";
 import { createClient } from "@/lib/supabase/client";
 import { mapSkill } from "@/lib/supabase/queries";
 import type { Skill } from "@/types";
+import { Plus } from "lucide-react";
 
 export default function SkillsBrowsePage() {
   const [search, setSearch] = useState("");
@@ -16,6 +18,7 @@ export default function SkillsBrowsePage() {
   const [upvoteCounts, setUpvoteCounts] = useState<Record<string, number>>({});
   const [userUpvotes, setUserUpvotes] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -73,6 +76,11 @@ export default function SkillsBrowsePage() {
     }
   };
 
+  const handleSkillAdded = (skill: Skill) => {
+    setSkills((prev) => [skill, ...prev]);
+    setUpvoteCounts((prev) => ({ ...prev, [skill.id]: 0 }));
+  };
+
   const categories = useMemo(() => getAllCategories(skills), [skills]);
   const filtered = useMemo(
     () => filterSkills(skills, search, selectedCategories),
@@ -80,41 +88,57 @@ export default function SkillsBrowsePage() {
   );
 
   return (
-    <div>
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-6">
-          Skills Library
-        </h2>
+    <>
+      <div>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-3xl font-bold text-gray-900">Skills Library</h2>
+            <button
+              onClick={() => setShowModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold text-sm rounded-lg transition shadow-sm"
+            >
+              <Plus size={16} />
+              Add Skill
+            </button>
+          </div>
 
-        <div className="flex gap-3 mb-4">
-          <SearchBar value={search} onChange={setSearch} />
-          <FilterDropdown
-            categories={categories}
-            selected={selectedCategories}
-            onChange={setSelectedCategories}
-          />
+          <div className="flex gap-3 mb-4">
+            <SearchBar value={search} onChange={setSearch} />
+            <FilterDropdown
+              categories={categories}
+              selected={selectedCategories}
+              onChange={setSelectedCategories}
+            />
+          </div>
+
+          {!loading && (
+            <div className="text-sm text-gray-600 mb-4">
+              Showing <span className="font-semibold">{filtered.length}</span>{" "}
+              of {skills.length} skills
+            </div>
+          )}
         </div>
 
-        {!loading && (
-          <div className="text-sm text-gray-600 mb-4">
-            Showing <span className="font-semibold">{filtered.length}</span> of{" "}
-            {skills.length} skills
+        {loading ? (
+          <div className="text-gray-400 text-sm py-12 text-center">
+            Loading skills...
           </div>
+        ) : (
+          <SkillGrid
+            skills={filtered}
+            upvoteCounts={upvoteCounts}
+            userUpvotes={userUpvotes}
+            onUpvote={handleUpvote}
+          />
         )}
       </div>
 
-      {loading ? (
-        <div className="text-gray-400 text-sm py-12 text-center">
-          Loading skills...
-        </div>
-      ) : (
-        <SkillGrid
-          skills={filtered}
-          upvoteCounts={upvoteCounts}
-          userUpvotes={userUpvotes}
-          onUpvote={handleUpvote}
+      {showModal && (
+        <AddSkillModal
+          onClose={() => setShowModal(false)}
+          onSkillAdded={handleSkillAdded}
         />
       )}
-    </div>
+    </>
   );
 }

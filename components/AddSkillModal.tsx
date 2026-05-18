@@ -1,0 +1,466 @@
+"use client";
+
+import { useState } from "react";
+import {
+  X,
+  Loader2,
+  CheckCircle,
+  AlertTriangle,
+  ShieldX,
+  Upload,
+} from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { mapSkill } from "@/lib/supabase/queries";
+import type { Skill } from "@/types";
+
+type Step = "input" | "loading" | "error" | "blocked" | "review" | "success";
+
+interface ParsedSkill {
+  name: string | null;
+  category: string | null;
+  agency: string | null;
+  description: string | null;
+  primary_use_case: string | null;
+  target_job_roles: string | null;
+  complexity_level: string | null;
+  dependencies: string | null;
+  saas_dependencies: string | null;
+  implementability_note: string | null;
+  when_to_use: string | null;
+  inputs: string[] | null;
+  instructions: string[] | null;
+  tools_allowed: string | null;
+  output_format: string | null;
+  constraints_list: string[] | null;
+  failure_handling: string | null;
+  skill_examples: Array<{ input: string; output: string } | string> | null;
+}
+
+interface AddSkillModalProps {
+  onClose: () => void;
+  onSkillAdded: (skill: Skill) => void;
+}
+
+function Val({ v }: { v: string | null | undefined }) {
+  if (!v) return <span className="text-gray-400 italic">Not detected</span>;
+  return <span>{v}</span>;
+}
+
+function ListVal({ items }: { items: string[] | null | undefined }) {
+  if (!items?.length)
+    return <span className="text-gray-400 italic">Not detected</span>;
+  return (
+    <ul className="space-y-1">
+      {items.map((item, i) => (
+        <li key={i} className="text-sm text-gray-800 flex gap-2">
+          <span className="text-gray-400 mt-0.5 flex-shrink-0">•</span>
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function Row({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="grid grid-cols-[140px_1fr] gap-3 py-2.5 border-b border-gray-100 last:border-0">
+      <span className="text-xs font-bold text-gray-500 uppercase tracking-wide pt-0.5 leading-relaxed">
+        {label}
+      </span>
+      <div className="text-sm text-gray-800 leading-relaxed">{children}</div>
+    </div>
+  );
+}
+
+export default function AddSkillModal({
+  onClose,
+  onSkillAdded,
+}: AddSkillModalProps) {
+  const [step, setStep] = useState<Step>("input");
+  const [text, setText] = useState("");
+  const [email, setEmail] = useState("");
+  const [parsed, setParsed] = useState<ParsedSkill | null>(null);
+  const [riskLevel, setRiskLevel] = useState<"safe" | "warning" | "blocked">(
+    "safe"
+  );
+  const [riskReason, setRiskReason] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [newSkillName, setNewSkillName] = useState("");
+
+  const canDismiss = step !== "loading" && step !== "uploading";
+
+  const handleAnalyse = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+    setStep("loading");
+
+    try {
+      const res = await fetch("/api/parse-skill", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      if (!res.ok) {
+        const { error } = await res.json().catch(() => ({ error: "Unknown error" }));
+        throw new Error(error ?? "API request failed");
+      }
+      const data = await res.json();
+      setParsed(data.parsed);
+      setRiskLevel(data.riskLevel);
+      setRiskReason(data.riskReason ?? "");
+      setStep(data.riskLevel === "blocked" ? "blocked" : "review");
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Something went wrong");
+      setStep("error");
+    }
+  };
+
+  const handleConfirm = async () => {
+    if (!parsed) return;
+    setUploading(true);
+
+    try {
+      const supabase = createClient();
+      const skillId = `USR-${Date.now().toString(36).toUpperCase()}`;
+
+      const examples =
+        parsed.skill_examples?.map((e) =>
+          typeof e === "string" ? e : `Input: ${e.input} Output: ${e.output}`
+        ) ?? null;
+
+      const dbRow = {
+        id: skillId,
+        name: parsed.name ?? "Untitled Skill",
+        category: parsed.category ?? "Content & Documentation",
+        agency: parsed.agency ?? "",
+        description: parsed.description ?? "",
+        primary_use_case: parsed.primary_use_case ?? "",
+        target_job_roles: parsed.target_job_roles ?? "",
+        complexity_level: parsed.complexity_level ?? "Medium",
+        dependencies: parsed.dependencies ?? "",
+        saas_dependencies: parsed.saas_dependencies ?? "",
+        implementability_note: parsed.implementability_note ?? "",
+        when_to_use: parsed.when_to_use,
+        inputs: parsed.inputs,
+        instructions: parsed.instructions,
+        tools_allowed: parsed.tools_allowed,
+        output_format: parsed.output_format,
+        constraints_list: parsed.constraints_list,
+        failure_handling: parsed.failure_handling,
+        skill_examples: examples,
+        submitted_by: email,
+      };
+
+      const { data, error } = await supabase
+        .from("skills")
+        .insert(dbRow)
+        .select()
+        .single();
+
+      if (error) throw new Error(error.message);
+
+      const skill = mapSkill(data);
+      setNewSkillName(skill.name);
+      onSkillAdded(skill);
+      setStep("success");
+    } catch (err) {
+      setErrorMsg(
+        err instanceof Error ? err.message : "Failed to upload skill"
+      );
+      setStep("error");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto py-8 px-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && canDismiss) onClose();
+      }}
+    >
+      <div className="bg-white rounded-xl w-full max-w-2xl shadow-xl">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <h2 className="font-bold text-gray-900">Add a Skill</h2>
+          {canDismiss && (
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition"
+            >
+              <X size={18} />
+            </button>
+          )}
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-6">
+          {/* ── Step 1: Input ── */}
+          {step === "input" && (
+            <form onSubmit={handleAnalyse} className="space-y-5">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Paste your skill
+                </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Plain text or markdown (.md / .txt) format accepted
+                </p>
+                <textarea
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  rows={12}
+                  required
+                  placeholder="Paste your skill definition here..."
+                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 text-sm font-mono focus:outline-none focus:border-blue-500 transition resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Your work email
+                </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Your email will be shown on the skill card
+                </p>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@agency.gov.sg"
+                  required
+                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-800 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!text.trim() || !email.trim()}
+                  className="px-5 py-2 bg-teal-600 hover:bg-teal-700 disabled:bg-teal-300 text-white text-sm font-semibold rounded-lg transition"
+                >
+                  Analyse skill →
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* ── Step 2: Loading ── */}
+          {step === "loading" && (
+            <div className="flex flex-col items-center py-16 gap-4">
+              <Loader2 size={36} className="text-teal-500 animate-spin" />
+              <p className="text-gray-600 font-medium">
+                Analysing your skill with AI...
+              </p>
+              <p className="text-xs text-gray-400">
+                Checking for safety and extracting metadata
+              </p>
+            </div>
+          )}
+
+          {/* ── Error state ── */}
+          {step === "error" && (
+            <div className="py-8 text-center space-y-4">
+              <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto">
+                <AlertTriangle size={24} className="text-red-500" />
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900 mb-1">
+                  Something went wrong
+                </p>
+                <p className="text-sm text-gray-500">{errorMsg}</p>
+              </div>
+              <div className="flex justify-center gap-3">
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-800 transition"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    setErrorMsg("");
+                    setStep("input");
+                  }}
+                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition"
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 3a: Blocked ── */}
+          {step === "blocked" && (
+            <div className="py-8 space-y-5">
+              <div className="flex items-start gap-4 bg-red-50 border-2 border-red-200 rounded-xl p-5">
+                <ShieldX
+                  size={24}
+                  className="text-red-500 flex-shrink-0 mt-0.5"
+                />
+                <div>
+                  <p className="font-bold text-red-800 mb-1">
+                    Skill blocked — cannot be uploaded
+                  </p>
+                  <p className="text-sm text-red-700">{riskReason}</p>
+                </div>
+              </div>
+              <p className="text-sm text-gray-500">
+                This skill was flagged as potentially unsafe or
+                policy-violating. If you believe this is an error, please
+                review your submission and contact the platform administrator.
+              </p>
+              <div className="flex justify-end">
+                <button
+                  onClick={onClose}
+                  className="px-5 py-2 bg-gray-800 hover:bg-gray-900 text-white text-sm font-semibold rounded-lg transition"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 3b: Review ── */}
+          {step === "review" && parsed && (
+            <div className="space-y-5">
+              {riskLevel === "warning" && (
+                <div className="flex items-start gap-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-4">
+                  <AlertTriangle
+                    size={18}
+                    className="text-amber-500 flex-shrink-0 mt-0.5"
+                  />
+                  <div>
+                    <p className="font-semibold text-amber-800 text-sm mb-0.5">
+                      Please review flagged content before confirming
+                    </p>
+                    <p className="text-xs text-amber-700">{riskReason}</p>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <p className="text-sm font-semibold text-gray-700 mb-3">
+                  Parsed skill details
+                </p>
+                <div className="bg-gray-50 rounded-xl px-4 py-1 max-h-[50vh] overflow-y-auto">
+                  <Row label="Name">
+                    <Val v={parsed.name} />
+                  </Row>
+                  <Row label="Category">
+                    <Val v={parsed.category} />
+                  </Row>
+                  <Row label="Agency">
+                    <Val v={parsed.agency} />
+                  </Row>
+                  <Row label="Complexity">
+                    <Val v={parsed.complexity_level} />
+                  </Row>
+                  <Row label="Description">
+                    <Val v={parsed.description} />
+                  </Row>
+                  <Row label="Primary Use Case">
+                    <Val v={parsed.primary_use_case} />
+                  </Row>
+                  <Row label="Target Roles">
+                    <Val v={parsed.target_job_roles} />
+                  </Row>
+                  <Row label="When to Use">
+                    <Val v={parsed.when_to_use} />
+                  </Row>
+                  <Row label="Inputs">
+                    <ListVal items={parsed.inputs} />
+                  </Row>
+                  <Row label="Instructions">
+                    <ListVal items={parsed.instructions} />
+                  </Row>
+                  <Row label="Tools Allowed">
+                    <Val v={parsed.tools_allowed} />
+                  </Row>
+                  <Row label="Output Format">
+                    <Val v={parsed.output_format} />
+                  </Row>
+                  <Row label="Constraints">
+                    <ListVal items={parsed.constraints_list} />
+                  </Row>
+                  <Row label="Failure Handling">
+                    <Val v={parsed.failure_handling} />
+                  </Row>
+                  <Row label="Dependencies">
+                    <Val v={parsed.dependencies} />
+                  </Row>
+                  <Row label="SaaS Dependencies">
+                    <Val v={parsed.saas_dependencies} />
+                  </Row>
+                  <Row label="Implementability">
+                    <Val v={parsed.implementability_note} />
+                  </Row>
+                  <Row label="Submitted by">
+                    <span className="text-gray-700">{email}</span>
+                  </Row>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-1">
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-800 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirm}
+                  disabled={uploading}
+                  className="px-5 py-2 bg-teal-600 hover:bg-teal-700 disabled:bg-teal-400 text-white text-sm font-semibold rounded-lg transition flex items-center gap-2"
+                >
+                  {uploading ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Upload size={14} />
+                  )}
+                  Confirm & Upload
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 4: Success ── */}
+          {step === "success" && (
+            <div className="py-10 flex flex-col items-center gap-4 text-center">
+              <CheckCircle size={48} className="text-teal-500" />
+              <div>
+                <p className="text-xl font-bold text-gray-900 mb-1">
+                  Skill uploaded successfully!
+                </p>
+                <p className="text-sm text-gray-600">{newSkillName}</p>
+              </div>
+              <p className="text-xs text-gray-400">
+                Your skill is now live in the library
+              </p>
+              <button
+                onClick={onClose}
+                className="mt-2 px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition"
+              >
+                Done
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

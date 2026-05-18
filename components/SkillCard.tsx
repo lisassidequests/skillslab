@@ -30,6 +30,12 @@ export default function SkillCard({
         {shortCategory}
       </div>
 
+      {skill.submittedBy && (
+        <p className="text-[10px] text-gray-400 mb-2 truncate">
+          Submitted by {skill.submittedBy}
+        </p>
+      )}
+
       <h3 className="text-sm font-bold text-gray-900 mb-2 line-clamp-2 leading-snug">
         {skill.name}
       </h3>

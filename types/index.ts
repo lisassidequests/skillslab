@@ -20,4 +20,5 @@ export interface Skill {
   constraintsList?: string[];
   failureHandling?: string;
   skillExamples?: string[];
+  submittedBy?: string;
 }

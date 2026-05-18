@@ -251,11 +251,18 @@ export default function SkillDetail({
             <span>{upvoteCount}</span>
           </button>
         </div>
-        <span
-          className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${tagClass}`}
-        >
-          {skill.category}
-        </span>
+        <div className="flex items-center gap-3 flex-wrap">
+          <span
+            className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${tagClass}`}
+          >
+            {skill.category}
+          </span>
+          {skill.submittedBy && (
+            <span className="text-xs text-gray-400">
+              Submitted by {skill.submittedBy}
+            </span>
+          )}
+        </div>
         <p className="text-gray-700 leading-relaxed mt-4 max-w-3xl">
           {skill.description}
         </p>
