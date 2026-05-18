@@ -15,7 +15,6 @@ function buildMarkdown(skill: Skill): string {
     `name: ${skill.name}`,
     `category: ${skill.category}`,
     `complexity: ${skill.complexityLevel}`,
-    `efficiency_gain: ${skill.efficiencyGain}`,
     `---`,
     ``,
     `# ${skill.name}`,
@@ -72,7 +71,6 @@ function buildMarkdown(skill: Skill): string {
 
   lines.push(`## Target Job Roles`, skill.targetJobRoles, ``);
   lines.push(`## Dependencies`, skill.dependencies, ``);
-  lines.push(`## Expected Efficiency Gain`, skill.efficiencyGain, ``);
 
   return lines.join("\n");
 }

@@ -8,7 +8,6 @@ export interface Skill {
   description: string;
   primaryUseCase: string;
   targetJobRoles: string;
-  efficiencyGain: string;
   complexityLevel: ComplexityLevel;
   dependencies: string;
   saasDependencies: string;
