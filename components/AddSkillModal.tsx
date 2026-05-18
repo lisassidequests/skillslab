@@ -101,7 +101,7 @@ export default function AddSkillModal({
     });
   }, []);
 
-  const canDismiss = step !== "loading" && step !== "uploading";
+  const canDismiss = step !== "loading" && !uploading;
 
   const handleAnalyse = async (e: React.FormEvent) => {
     e.preventDefault();
