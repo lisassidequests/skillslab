@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import SkillDetail from "@/components/SkillDetail";
 import { createClient } from "@/lib/supabase/server";
-import { mapSkill } from "@/lib/supabase/queries";
+import { getSkillUsageStats, mapSkill } from "@/lib/supabase/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +27,7 @@ export default async function SkillPage({
 }) {
   const supabase = await createClient();
 
-  const [{ data: raw }, { data: { user } }, { data: upvotes }] =
+  const [{ data: raw }, { data: { user } }, { data: upvotes }, usageStats] =
     await Promise.all([
       supabase.from("skills").select("*").eq("id", params.id).single(),
       supabase.auth.getUser(),
@@ -35,6 +35,7 @@ export default async function SkillPage({
         .from("upvotes")
         .select("user_id")
         .eq("skill_id", params.id),
+      getSkillUsageStats(params.id),
     ]);
 
   if (!raw) notFound();
@@ -49,6 +50,7 @@ export default async function SkillPage({
       skill={skill}
       initialUpvoteCount={upvoteCount}
       initialHasUpvoted={hasUpvoted}
+      usageStats={usageStats}
     />
   );
 }

@@ -1,0 +1,19 @@
+{
+  "name": "skillslab-mcp",
+  "version": "0.1.0",
+  "description": "MCP server exposing the Singapore Government Skills Lab to Claude agents",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "skillslab-mcp": "index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

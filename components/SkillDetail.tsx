@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Download, FileText, ThumbsUp } from "lucide-react";
-import type { Skill } from "@/types";
+import { Activity, ArrowLeft, Download, FileText, ThumbsUp } from "lucide-react";
+import type { Skill, SkillUsageStats } from "@/types";
 import { categoryColor } from "@/lib/skills";
 import { createClient } from "@/lib/supabase/client";
 
@@ -11,6 +11,7 @@ interface SkillDetailProps {
   skill: Skill;
   initialUpvoteCount: number;
   initialHasUpvoted: boolean;
+  usageStats?: SkillUsageStats;
 }
 
 function buildMarkdown(skill: Skill): string {
@@ -162,6 +163,7 @@ export default function SkillDetail({
   skill,
   initialUpvoteCount,
   initialHasUpvoted,
+  usageStats,
 }: SkillDetailProps) {
   const router = useRouter();
   const markdown = buildMarkdown(skill);
@@ -311,6 +313,48 @@ export default function SkillDetail({
               <p className="text-gray-700 text-sm leading-relaxed">
                 {skill.toolsAllowed}
               </p>
+            </div>
+          )}
+
+          {usageStats && (
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Activity size={14} className="text-slate-500" />
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                  Agent Usage
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {usageStats.pullsLast7d}
+                  </p>
+                  <p className="text-xs text-gray-500">Pulls last 7 days</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {usageStats.totalRuns}
+                  </p>
+                  <p className="text-xs text-gray-500">Runs reported</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {usageStats.avgRating !== null
+                      ? usageStats.avgRating.toFixed(1)
+                      : "—"}
+                  </p>
+                  <p className="text-xs text-gray-500">Avg rating</p>
+                </div>
+                <div>
+                  <p
+                    className="text-sm font-semibold text-gray-900 truncate"
+                    title={usageStats.topErrorCategory ?? undefined}
+                  >
+                    {usageStats.topErrorCategory ?? "—"}
+                  </p>
+                  <p className="text-xs text-gray-500">Top error</p>
+                </div>
+              </div>
             </div>
           )}
 
