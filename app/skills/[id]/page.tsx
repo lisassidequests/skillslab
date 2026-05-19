@@ -50,7 +50,7 @@ export default async function SkillPage({
       skill={skill}
       initialUpvoteCount={upvoteCount}
       initialHasUpvoted={hasUpvoted}
-      usageStats={usageStats}
+      usageStats={usageStats ?? undefined}
     />
   );
 }

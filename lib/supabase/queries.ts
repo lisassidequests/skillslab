@@ -77,53 +77,63 @@ export function mapApiKey(row: DbApiKey): ApiKey {
 
 export async function getSkillUsageStats(
   skillId: string
-): Promise<SkillUsageStats> {
-  const admin = createAdminClient();
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+): Promise<SkillUsageStats | null> {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return null;
 
-  const [{ count: pullsLast7d }, { data: runs }] = await Promise.all([
-    admin
-      .from("skill_pulls")
-      .select("id", { count: "exact", head: true })
-      .eq("skill_id", skillId)
-      .gte("pulled_at", sevenDaysAgo),
-    admin
-      .from("skill_runs")
-      .select("rating, error_category")
-      .eq("skill_id", skillId),
-  ]);
+  try {
+    const admin = createAdminClient();
+    const sevenDaysAgo = new Date(
+      Date.now() - 7 * 24 * 60 * 60 * 1000
+    ).toISOString();
 
-  const totalRuns = runs?.length ?? 0;
-  const ratings = (runs ?? [])
-    .map((r) => r.rating)
-    .filter((n): n is number => typeof n === "number");
-  const avgRating =
-    ratings.length > 0
-      ? ratings.reduce((a, b) => a + b, 0) / ratings.length
-      : null;
+    const [pullsRes, runsRes] = await Promise.all([
+      admin
+        .from("skill_pulls")
+        .select("id", { count: "exact", head: true })
+        .eq("skill_id", skillId)
+        .gte("pulled_at", sevenDaysAgo),
+      admin
+        .from("skill_runs")
+        .select("rating, error_category")
+        .eq("skill_id", skillId),
+    ]);
 
-  const errorCounts = new Map<string, number>();
-  for (const r of runs ?? []) {
-    if (r.error_category) {
-      errorCounts.set(
-        r.error_category,
-        (errorCounts.get(r.error_category) ?? 0) + 1
-      );
+    if (pullsRes.error || runsRes.error) return null;
+
+    const runs = runsRes.data ?? [];
+    const ratings = runs
+      .map((r) => r.rating)
+      .filter((n): n is number => typeof n === "number");
+    const avgRating =
+      ratings.length > 0
+        ? ratings.reduce((a, b) => a + b, 0) / ratings.length
+        : null;
+
+    const errorCounts = new Map<string, number>();
+    for (const r of runs) {
+      if (r.error_category) {
+        errorCounts.set(
+          r.error_category,
+          (errorCounts.get(r.error_category) ?? 0) + 1
+        );
+      }
     }
-  }
-  let topErrorCategory: string | null = null;
-  let topCount = 0;
-  for (const [cat, count] of errorCounts) {
-    if (count > topCount) {
-      topErrorCategory = cat;
-      topCount = count;
+    let topErrorCategory: string | null = null;
+    let topCount = 0;
+    for (const [cat, count] of errorCounts) {
+      if (count > topCount) {
+        topErrorCategory = cat;
+        topCount = count;
+      }
     }
-  }
 
-  return {
-    pullsLast7d: pullsLast7d ?? 0,
-    totalRuns,
-    avgRating,
-    topErrorCategory,
-  };
+    return {
+      pullsLast7d: pullsRes.count ?? 0,
+      totalRuns: runs.length,
+      avgRating,
+      topErrorCategory,
+    };
+  } catch {
+    return null;
+  }
 }
