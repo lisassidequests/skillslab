@@ -7,6 +7,7 @@ import {
   Copy,
   CheckCircle,
   AlertTriangle,
+  Bot,
   KeyRound,
   Loader2,
 } from "lucide-react";
@@ -34,13 +35,37 @@ function formatLastUsed(iso: string | undefined): string {
   return formatDate(iso);
 }
 
+function buildAgentPrompt(baseUrl: string, key: string): string {
+  return `You have access to the Singapore Government Skills Lab — a curated library of structured AI skill definitions for government workflows.
+
+Base URL: ${baseUrl}
+API key: ${key}
+
+How to use it:
+
+1. GET /api/v1/skills
+   Browse the full library. Returns a list of skills with names, categories, and descriptions.
+
+2. GET /api/v1/skills/{id}?task=<one-line description of your task>
+   Fetch the full skill definition — instructions, inputs, tools allowed, constraints, and examples. The response also contains a \`reporting_prompt\` field and a \`pull_id\`.
+
+3. Follow the reporting_prompt.
+   After you complete the task, POST to /api/v1/skill-runs as the prompt instructs, including the pull_id from step 2. Report even on success — ratings and notes are how the skill library improves over time.
+   Required fields: skill_id, success (boolean).
+   Optional: pull_id, rating (1–5), error_category, notes.
+
+Always prefer using a skill from the library over improvising a workflow from scratch. If no skill fits, note the gap so a human can add one.`;
+}
+
 export default function ApiKeysPage() {
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [plaintext, setPlaintext] = useState<string | null>(null);
+  const [agentPrompt, setAgentPrompt] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [promptCopied, setPromptCopied] = useState(false);
   const [error, setError] = useState("");
 
   const load = async () => {
@@ -75,6 +100,7 @@ export default function ApiKeysPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed");
       setPlaintext(data.plaintext);
+      setAgentPrompt(buildAgentPrompt(window.location.origin, data.plaintext));
       setNewName("");
       setKeys((prev) => [data.key, ...prev]);
     } catch (e) {
@@ -89,6 +115,18 @@ export default function ApiKeysPage() {
     await navigator.clipboard.writeText(plaintext);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
+  };
+
+  const handleCopyPrompt = async () => {
+    if (!agentPrompt) return;
+    await navigator.clipboard.writeText(agentPrompt);
+    setPromptCopied(true);
+    setTimeout(() => setPromptCopied(false), 1500);
+  };
+
+  const handleDismiss = () => {
+    setPlaintext(null);
+    setAgentPrompt(null);
   };
 
   const handleRevoke = async (id: string) => {
@@ -111,7 +149,7 @@ export default function ApiKeysPage() {
       </p>
 
       {plaintext && (
-        <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-5 mb-6">
+        <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-5 mb-4">
           <div className="flex items-start gap-3 mb-3">
             <AlertTriangle size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
             <div>
@@ -132,14 +170,44 @@ export default function ApiKeysPage() {
               className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded transition"
             >
               {copied ? <CheckCircle size={14} /> : <Copy size={14} />}
-              {copied ? "Copied" : "Copy"}
+              {copied ? "Copied" : "Copy key"}
             </button>
           </div>
+        </div>
+      )}
+
+      {agentPrompt && (
+        <div className="bg-indigo-50 border-2 border-indigo-200 rounded-xl p-5 mb-6">
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="flex items-start gap-3">
+              <Bot size={20} className="text-indigo-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold text-indigo-900">
+                  Agent prompt — paste this to your AI agent
+                </p>
+                <p className="text-sm text-indigo-800 mt-1">
+                  This tells your agent the correct endpoints, how to use the
+                  library, and how to report outcomes. The API key is already
+                  embedded.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleCopyPrompt}
+              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded transition"
+            >
+              {promptCopied ? <CheckCircle size={14} /> : <Copy size={14} />}
+              {promptCopied ? "Copied" : "Copy prompt"}
+            </button>
+          </div>
+          <pre className="bg-white border border-indigo-200 rounded-lg px-4 py-3 text-xs text-gray-700 leading-relaxed whitespace-pre-wrap break-words font-mono max-h-48 overflow-y-auto">
+            {agentPrompt}
+          </pre>
           <button
-            onClick={() => setPlaintext(null)}
-            className="mt-3 text-sm text-amber-700 hover:text-amber-900 font-medium"
+            onClick={handleDismiss}
+            className="mt-3 text-sm text-indigo-700 hover:text-indigo-900 font-medium"
           >
-            I&apos;ve saved it — dismiss
+            I&apos;ve saved both — dismiss
           </button>
         </div>
       )}

@@ -9,7 +9,107 @@ import { filterSkills, getAllCategories } from "@/lib/skills";
 import { createClient } from "@/lib/supabase/client";
 import { mapSkill } from "@/lib/supabase/queries";
 import type { Skill } from "@/types";
-import { Plus } from "lucide-react";
+import { BookOpen, Bot, ChevronDown, ChevronUp, Download, Plus } from "lucide-react";
+
+function OnboardingBanner() {
+  const [open, setOpen] = useState(true);
+
+  return (
+    <div className="bg-gray-50 border-2 border-gray-200 rounded-xl mb-6 overflow-hidden">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between px-5 py-3.5 text-left hover:bg-gray-100 transition"
+      >
+        <span className="text-sm font-semibold text-gray-700">
+          How to use this library
+        </span>
+        {open ? (
+          <ChevronUp size={16} className="text-gray-400" />
+        ) : (
+          <ChevronDown size={16} className="text-gray-400" />
+        )}
+      </button>
+
+      {open && (
+        <div className="px-5 pb-5 border-t border-gray-200">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center">
+                <BookOpen size={15} className="text-teal-700" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-800 mb-0.5">
+                  Browse &amp; search
+                </p>
+                <p className="text-xs text-gray-600 leading-relaxed">
+                  Use the search bar or category filter to find a skill. Click
+                  any card to see the full definition, instructions, and
+                  constraints.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Download size={15} className="text-blue-700" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-800 mb-0.5">
+                  Use a skill
+                </p>
+                <p className="text-xs text-gray-600 leading-relaxed">
+                  Open a skill, read the instructions, then download the{" "}
+                  <code className="font-mono bg-gray-100 px-1 rounded">.md</code>{" "}
+                  file and attach it to your AI tool — or paste the instructions
+                  directly into your agent&apos;s context.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Plus size={15} className="text-purple-700" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-800 mb-0.5">
+                  Add a skill
+                </p>
+                <p className="text-xs text-gray-600 leading-relaxed">
+                  Click <strong>Add Skill</strong> (top right) and paste your
+                  skill definition. The AI parser extracts the metadata and runs
+                  a safety check before publishing it to the library.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 flex gap-3 bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-3">
+            <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+              <Bot size={15} className="text-indigo-700" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-indigo-900 mb-0.5">
+                For agent developers
+              </p>
+              <p className="text-xs text-indigo-800 leading-relaxed">
+                Want your AI agent to pull skills programmatically? Go to{" "}
+                <a
+                  href="/settings/api-keys"
+                  className="underline font-semibold hover:text-indigo-600"
+                >
+                  Settings → API Keys
+                </a>
+                , create a key, and copy the ready-to-paste agent prompt that
+                appears — it tells your agent the correct endpoints and how to
+                report outcomes back so the library improves over time.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function SkillsBrowsePage() {
   const [search, setSearch] = useState("");
@@ -101,6 +201,8 @@ export default function SkillsBrowsePage() {
               Add Skill
             </button>
           </div>
+
+          <OnboardingBanner />
 
           <div className="flex gap-3 mb-4">
             <SearchBar value={search} onChange={setSearch} />
