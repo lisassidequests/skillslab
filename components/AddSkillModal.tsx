@@ -8,12 +8,28 @@ import {
   AlertTriangle,
   ShieldX,
   Upload,
+  Pencil,
+  Check,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { mapSkill } from "@/lib/supabase/queries";
 import type { Skill } from "@/types";
 
 type Step = "input" | "loading" | "error" | "blocked" | "review" | "success";
+
+const SKILL_CATEGORIES = [
+  "Administrative & Operations",
+  "Data & Intelligence",
+  "Communication & Engagement",
+  "Case Management & Social Work",
+  "Compliance & Governance",
+  "Content & Documentation",
+  "Citizen-Facing Service",
+  "Intelligence & Research",
+  "Scheduling & Coordination",
+];
+
+const COMPLEXITY_LEVELS = ["Low", "Medium", "High"];
 
 interface ParsedSkill {
   name: string | null;
@@ -61,6 +77,88 @@ function ListVal({ items }: { items: string[] | null | undefined }) {
   );
 }
 
+const inputClass =
+  "w-full border border-gray-300 rounded-md px-2.5 py-1.5 text-sm focus:outline-none focus:border-blue-500 transition";
+
+function TextInput({
+  value,
+  onChange,
+  textarea,
+}: {
+  value: string | null | undefined;
+  onChange: (v: string) => void;
+  textarea?: boolean;
+}) {
+  if (textarea) {
+    return (
+      <textarea
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value)}
+        rows={3}
+        className={`${inputClass} resize-y`}
+      />
+    );
+  }
+  return (
+    <input
+      type="text"
+      value={value ?? ""}
+      onChange={(e) => onChange(e.target.value)}
+      className={inputClass}
+    />
+  );
+}
+
+function SelectInput({
+  value,
+  options,
+  onChange,
+}: {
+  value: string | null | undefined;
+  options: string[];
+  onChange: (v: string) => void;
+}) {
+  return (
+    <select
+      value={value ?? ""}
+      onChange={(e) => onChange(e.target.value)}
+      className={inputClass}
+    >
+      <option value="">Not detected</option>
+      {options.map((o) => (
+        <option key={o} value={o}>
+          {o}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+function ListInput({
+  items,
+  onChange,
+}: {
+  items: string[] | null | undefined;
+  onChange: (v: string[]) => void;
+}) {
+  return (
+    <textarea
+      value={items?.join("\n") ?? ""}
+      onChange={(e) =>
+        onChange(
+          e.target.value
+            .split("\n")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        )
+      }
+      rows={Math.max(3, (items?.length ?? 0) + 1)}
+      placeholder="One item per line"
+      className={`${inputClass} resize-y`}
+    />
+  );
+}
+
 function Row({
   label,
   children,
@@ -92,7 +190,13 @@ export default function AddSkillModal({
   const [riskReason, setRiskReason] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [newSkillName, setNewSkillName] = useState("");
+
+  const updateField = <K extends keyof ParsedSkill>(
+    k: K,
+    v: ParsedSkill[K]
+  ) => setParsed((p) => (p ? { ...p, [k]: v } : p));
 
   useEffect(() => {
     const supabase = createClient();
@@ -352,60 +456,208 @@ export default function AddSkillModal({
               )}
 
               <div>
-                <p className="text-sm font-semibold text-gray-700 mb-3">
-                  Parsed skill details
-                </p>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm font-semibold text-gray-700">
+                    Parsed skill details
+                  </p>
+                  {!uploading && (
+                    <button
+                      type="button"
+                      onClick={() => setEditing((v) => !v)}
+                      className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 transition"
+                    >
+                      {editing ? (
+                        <>
+                          <Check size={14} /> Done editing
+                        </>
+                      ) : (
+                        <>
+                          <Pencil size={14} /> Edit fields
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
                 <div className="bg-gray-50 rounded-xl px-4 py-1 max-h-[50vh] overflow-y-auto">
                   <Row label="Name">
-                    <Val v={parsed.name} />
+                    {editing ? (
+                      <TextInput
+                        value={parsed.name}
+                        onChange={(v) => updateField("name", v)}
+                      />
+                    ) : (
+                      <Val v={parsed.name} />
+                    )}
                   </Row>
                   <Row label="Category">
-                    <Val v={parsed.category} />
+                    {editing ? (
+                      <SelectInput
+                        value={parsed.category}
+                        options={SKILL_CATEGORIES}
+                        onChange={(v) => updateField("category", v)}
+                      />
+                    ) : (
+                      <Val v={parsed.category} />
+                    )}
                   </Row>
                   <Row label="Agency">
-                    <Val v={parsed.agency} />
+                    {editing ? (
+                      <TextInput
+                        value={parsed.agency}
+                        onChange={(v) => updateField("agency", v)}
+                      />
+                    ) : (
+                      <Val v={parsed.agency} />
+                    )}
                   </Row>
                   <Row label="Complexity">
-                    <Val v={parsed.complexity_level} />
+                    {editing ? (
+                      <SelectInput
+                        value={parsed.complexity_level}
+                        options={COMPLEXITY_LEVELS}
+                        onChange={(v) => updateField("complexity_level", v)}
+                      />
+                    ) : (
+                      <Val v={parsed.complexity_level} />
+                    )}
                   </Row>
                   <Row label="Description">
-                    <Val v={parsed.description} />
+                    {editing ? (
+                      <TextInput
+                        textarea
+                        value={parsed.description}
+                        onChange={(v) => updateField("description", v)}
+                      />
+                    ) : (
+                      <Val v={parsed.description} />
+                    )}
                   </Row>
                   <Row label="Primary Use Case">
-                    <Val v={parsed.primary_use_case} />
+                    {editing ? (
+                      <TextInput
+                        value={parsed.primary_use_case}
+                        onChange={(v) => updateField("primary_use_case", v)}
+                      />
+                    ) : (
+                      <Val v={parsed.primary_use_case} />
+                    )}
                   </Row>
                   <Row label="Target Roles">
-                    <Val v={parsed.target_job_roles} />
+                    {editing ? (
+                      <TextInput
+                        value={parsed.target_job_roles}
+                        onChange={(v) => updateField("target_job_roles", v)}
+                      />
+                    ) : (
+                      <Val v={parsed.target_job_roles} />
+                    )}
                   </Row>
                   <Row label="When to Use">
-                    <Val v={parsed.when_to_use} />
+                    {editing ? (
+                      <TextInput
+                        textarea
+                        value={parsed.when_to_use}
+                        onChange={(v) => updateField("when_to_use", v)}
+                      />
+                    ) : (
+                      <Val v={parsed.when_to_use} />
+                    )}
                   </Row>
                   <Row label="Inputs">
-                    <ListVal items={parsed.inputs} />
+                    {editing ? (
+                      <ListInput
+                        items={parsed.inputs}
+                        onChange={(v) => updateField("inputs", v)}
+                      />
+                    ) : (
+                      <ListVal items={parsed.inputs} />
+                    )}
                   </Row>
                   <Row label="Instructions">
-                    <ListVal items={parsed.instructions} />
+                    {editing ? (
+                      <ListInput
+                        items={parsed.instructions}
+                        onChange={(v) => updateField("instructions", v)}
+                      />
+                    ) : (
+                      <ListVal items={parsed.instructions} />
+                    )}
                   </Row>
                   <Row label="Tools Allowed">
-                    <Val v={parsed.tools_allowed} />
+                    {editing ? (
+                      <TextInput
+                        value={parsed.tools_allowed}
+                        onChange={(v) => updateField("tools_allowed", v)}
+                      />
+                    ) : (
+                      <Val v={parsed.tools_allowed} />
+                    )}
                   </Row>
                   <Row label="Output Format">
-                    <Val v={parsed.output_format} />
+                    {editing ? (
+                      <TextInput
+                        value={parsed.output_format}
+                        onChange={(v) => updateField("output_format", v)}
+                      />
+                    ) : (
+                      <Val v={parsed.output_format} />
+                    )}
                   </Row>
                   <Row label="Constraints">
-                    <ListVal items={parsed.constraints_list} />
+                    {editing ? (
+                      <ListInput
+                        items={parsed.constraints_list}
+                        onChange={(v) => updateField("constraints_list", v)}
+                      />
+                    ) : (
+                      <ListVal items={parsed.constraints_list} />
+                    )}
                   </Row>
                   <Row label="Failure Handling">
-                    <Val v={parsed.failure_handling} />
+                    {editing ? (
+                      <TextInput
+                        textarea
+                        value={parsed.failure_handling}
+                        onChange={(v) => updateField("failure_handling", v)}
+                      />
+                    ) : (
+                      <Val v={parsed.failure_handling} />
+                    )}
                   </Row>
                   <Row label="Dependencies">
-                    <Val v={parsed.dependencies} />
+                    {editing ? (
+                      <TextInput
+                        textarea
+                        value={parsed.dependencies}
+                        onChange={(v) => updateField("dependencies", v)}
+                      />
+                    ) : (
+                      <Val v={parsed.dependencies} />
+                    )}
                   </Row>
                   <Row label="SaaS Dependencies">
-                    <Val v={parsed.saas_dependencies} />
+                    {editing ? (
+                      <TextInput
+                        textarea
+                        value={parsed.saas_dependencies}
+                        onChange={(v) => updateField("saas_dependencies", v)}
+                      />
+                    ) : (
+                      <Val v={parsed.saas_dependencies} />
+                    )}
                   </Row>
                   <Row label="Implementability">
-                    <Val v={parsed.implementability_note} />
+                    {editing ? (
+                      <TextInput
+                        textarea
+                        value={parsed.implementability_note}
+                        onChange={(v) =>
+                          updateField("implementability_note", v)
+                        }
+                      />
+                    ) : (
+                      <Val v={parsed.implementability_note} />
+                    )}
                   </Row>
                   <Row label="Submitted by">
                     <span className="text-gray-700">{email}</span>
