@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-5",
-        max_tokens: 1500,
+        max_tokens: 4096,
         system: SYSTEM_PROMPT,
         messages: [{ role: "user", content: text }],
       }),
@@ -82,16 +82,36 @@ export async function POST(request: NextRequest) {
   }
 
   let result: { riskLevel: string; riskReason: string; parsed: unknown };
+  let raw = "";
+  let stopReason = "";
   try {
     const data = await anthropicRes.json();
-    const raw = data.content?.[0]?.text ?? "";
-    result = JSON.parse(raw);
+    raw = data.content?.[0]?.text ?? "";
+    stopReason = data.stop_reason ?? "";
+    result = JSON.parse(extractJson(raw));
   } catch {
     return NextResponse.json(
-      { error: "Failed to parse AI response" },
+      {
+        error: "Failed to parse AI response",
+        detail: `stop_reason=${stopReason || "unknown"}; raw=${raw.slice(0, 500)}`,
+      },
       { status: 502 }
     );
   }
 
   return NextResponse.json(result);
+}
+
+// LLMs sometimes wrap JSON in a markdown fence or add stray prose.
+// Strip a fenced block if present, otherwise slice the outermost { … }.
+function extractJson(text: string): string {
+  const trimmed = text.trim();
+  const fence = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (fence) return fence[1].trim();
+
+  const start = trimmed.indexOf("{");
+  const end = trimmed.lastIndexOf("}");
+  if (start !== -1 && end > start) return trimmed.slice(start, end + 1);
+
+  return trimmed;
 }
