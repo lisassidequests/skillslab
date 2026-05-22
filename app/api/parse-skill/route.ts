@@ -33,10 +33,10 @@ Return ONLY a valid JSON object with this exact shape:
 No markdown, no explanation, just the JSON.`;
 
 export async function POST(request: NextRequest) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
-      { error: "ANTHROPIC_API_KEY is not configured" },
+      { error: "OPENROUTER_API_KEY is not configured" },
       { status: 500 }
     );
   }
@@ -50,33 +50,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  let anthropicRes: Response;
+  let openRouterRes: Response;
   try {
-    anthropicRes = await fetch("https://api.anthropic.com/v1/messages", {
+    openRouterRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
+        "Authorization": `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
+        model: "anthropic/claude-sonnet-4-6",
         max_tokens: 4096,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: "user", content: text }],
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: text },
+        ],
       }),
     });
   } catch {
     return NextResponse.json(
-      { error: "Failed to reach Anthropic API" },
+      { error: "Failed to reach OpenRouter API" },
       { status: 502 }
     );
   }
 
-  if (!anthropicRes.ok) {
-    const detail = await anthropicRes.text().catch(() => "");
+  if (!openRouterRes.ok) {
+    const detail = await openRouterRes.text().catch(() => "");
     return NextResponse.json(
-      { error: `Anthropic API error ${anthropicRes.status}`, detail },
+      { error: `OpenRouter API error ${openRouterRes.status}`, detail },
       { status: 502 }
     );
   }
@@ -85,9 +86,9 @@ export async function POST(request: NextRequest) {
   let raw = "";
   let stopReason = "";
   try {
-    const data = await anthropicRes.json();
-    raw = data.content?.[0]?.text ?? "";
-    stopReason = data.stop_reason ?? "";
+    const data = await openRouterRes.json();
+    raw = data.choices?.[0]?.message?.content ?? "";
+    stopReason = data.choices?.[0]?.finish_reason ?? "";
     result = JSON.parse(extractJson(raw));
   } catch {
     return NextResponse.json(
