@@ -8,6 +8,7 @@ interface SkillCardProps {
   upvoteCount: number;
   hasUpvoted: boolean;
   onUpvote: (skillId: string) => void;
+  linkPrefix?: string;
 }
 
 export default function SkillCard({
@@ -15,13 +16,14 @@ export default function SkillCard({
   upvoteCount,
   hasUpvoted,
   onUpvote,
+  linkPrefix = "/skills",
 }: SkillCardProps) {
   const tagClass = categoryColor(skill.category);
   const shortCategory = skill.category.split(" & ")[0];
 
   return (
     <Link
-      href={`/skills/${skill.id}`}
+      href={`${linkPrefix}/${skill.id}`}
       className="flex flex-col bg-white border-2 border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-blue-400 transition group min-h-[200px]"
     >
       <div

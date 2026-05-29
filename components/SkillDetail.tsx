@@ -12,6 +12,8 @@ interface SkillDetailProps {
   initialUpvoteCount: number;
   initialHasUpvoted: boolean;
   usageStats?: SkillUsageStats;
+  demoMode?: boolean;
+  demoToken?: string;
 }
 
 function buildMarkdown(skill: Skill): string {
@@ -164,6 +166,8 @@ export default function SkillDetail({
   initialUpvoteCount,
   initialHasUpvoted,
   usageStats,
+  demoMode = false,
+  demoToken,
 }: SkillDetailProps) {
   const router = useRouter();
   const markdown = buildMarkdown(skill);
@@ -172,16 +176,24 @@ export default function SkillDetail({
   const [upvoteCount, setUpvoteCount] = useState(initialUpvoteCount);
   const [hasUpvoted, setHasUpvoted] = useState(initialHasUpvoted);
   const [isUpvoting, setIsUpvoting] = useState(false);
+  const [showDemoNotice, setShowDemoNotice] = useState(false);
+
+  const backHref = demoMode && demoToken ? `/demo/${demoToken}` : "/skills";
 
   const handleBack = () => {
     if (typeof window !== "undefined" && window.history.length > 1) {
       router.back();
     } else {
-      router.push("/skills");
+      router.push(backHref);
     }
   };
 
   const handleUpvote = async () => {
+    if (demoMode) {
+      setShowDemoNotice(true);
+      setTimeout(() => setShowDemoNotice(false), 2500);
+      return;
+    }
     if (isUpvoting) return;
     setIsUpvoting(true);
 
@@ -237,21 +249,28 @@ export default function SkillDetail({
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">
             {skill.name}
           </h1>
-          <button
-            onClick={handleUpvote}
-            disabled={isUpvoting}
-            className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition border-2 ${
-              hasUpvoted
-                ? "bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100"
-                : "bg-white border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700"
-            }`}
-          >
-            <ThumbsUp
-              size={15}
-              className={hasUpvoted ? "fill-blue-600" : ""}
-            />
-            <span>{upvoteCount}</span>
-          </button>
+          <div className="flex-shrink-0 flex items-center gap-2">
+            {showDemoNotice && (
+              <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded">
+                Sign in to upvote
+              </span>
+            )}
+            <button
+              onClick={handleUpvote}
+              disabled={isUpvoting}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition border-2 ${
+                hasUpvoted
+                  ? "bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100"
+                  : "bg-white border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700"
+              }`}
+            >
+              <ThumbsUp
+                size={15}
+                className={hasUpvoted ? "fill-blue-600" : ""}
+              />
+              <span>{upvoteCount}</span>
+            </button>
+          </div>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <span

@@ -6,6 +6,7 @@ interface SkillGridProps {
   upvoteCounts: Record<string, number>;
   userUpvotes: Set<string>;
   onUpvote: (skillId: string) => void;
+  linkPrefix?: string;
 }
 
 export default function SkillGrid({
@@ -13,6 +14,7 @@ export default function SkillGrid({
   upvoteCounts,
   userUpvotes,
   onUpvote,
+  linkPrefix,
 }: SkillGridProps) {
   if (skills.length === 0) {
     return (
@@ -31,6 +33,7 @@ export default function SkillGrid({
           upvoteCount={upvoteCounts[skill.id] ?? 0}
           hasUpvoted={userUpvotes.has(skill.id)}
           onUpvote={onUpvote}
+          linkPrefix={linkPrefix}
         />
       ))}
     </div>

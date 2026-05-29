@@ -39,6 +39,17 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/settings") ||
     pathname === "/";
 
+  if (pathname.startsWith("/demo")) {
+    const expected = process.env.DEMO_LINK_TOKEN;
+    const token = pathname.split("/").filter(Boolean)[1];
+    if (!expected || token !== expected) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      return NextResponse.redirect(url);
+    }
+    return supabaseResponse;
+  }
+
   if (!user && isProtected) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";

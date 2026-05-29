@@ -55,6 +55,7 @@ interface ParsedSkill {
 interface AddSkillModalProps {
   onClose: () => void;
   onSkillAdded: (skill: Skill) => void;
+  demoMode?: boolean;
 }
 
 function Val({ v }: { v: string | null | undefined }) {
@@ -179,6 +180,7 @@ function Row({
 export default function AddSkillModal({
   onClose,
   onSkillAdded,
+  demoMode = false,
 }: AddSkillModalProps) {
   const [step, setStep] = useState<Step>("input");
   const [text, setText] = useState("");
@@ -199,11 +201,12 @@ export default function AddSkillModal({
   ) => setParsed((p) => (p ? { ...p, [k]: v } : p));
 
   useEffect(() => {
+    if (demoMode) return;
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user?.email) setEmail(user.email);
     });
-  }, []);
+  }, [demoMode]);
 
   const canDismiss = step !== "loading" && !uploading;
 
@@ -334,12 +337,28 @@ export default function AddSkillModal({
                 />
               </div>
 
-              <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-xs text-gray-600">
-                Will be submitted as{" "}
-                <span className="font-semibold text-gray-800">
-                  {email || "loading..."}
-                </span>
-                {" — "}shown on the skill card.
+              <div
+                className={`border rounded-lg px-4 py-3 text-xs ${
+                  demoMode
+                    ? "bg-amber-50 border-amber-200 text-amber-800"
+                    : "bg-gray-50 border-gray-200 text-gray-600"
+                }`}
+              >
+                {demoMode ? (
+                  <>
+                    <strong>Demo mode:</strong> you can run the AI parser to
+                    see what it extracts, but the skill won&apos;t be saved.
+                    Sign in to upload.
+                  </>
+                ) : (
+                  <>
+                    Will be submitted as{" "}
+                    <span className="font-semibold text-gray-800">
+                      {email || "loading..."}
+                    </span>
+                    {" — "}shown on the skill card.
+                  </>
+                )}
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
@@ -352,7 +371,7 @@ export default function AddSkillModal({
                 </button>
                 <button
                   type="submit"
-                  disabled={!text.trim() || !email}
+                  disabled={!text.trim() || (!demoMode && !email)}
                   className="px-5 py-2 bg-teal-600 hover:bg-teal-700 disabled:bg-teal-300 text-white text-sm font-semibold rounded-lg transition"
                 >
                   Analyse skill →
@@ -659,11 +678,31 @@ export default function AddSkillModal({
                       <Val v={parsed.implementability_note} />
                     )}
                   </Row>
-                  <Row label="Submitted by">
-                    <span className="text-gray-700">{email}</span>
-                  </Row>
+                  {!demoMode && (
+                    <Row label="Submitted by">
+                      <span className="text-gray-700">{email}</span>
+                    </Row>
+                  )}
                 </div>
               </div>
+
+              {demoMode && (
+                <div className="flex items-start gap-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-4">
+                  <AlertTriangle
+                    size={18}
+                    className="text-amber-500 flex-shrink-0 mt-0.5"
+                  />
+                  <div>
+                    <p className="font-semibold text-amber-800 text-sm mb-0.5">
+                      Demo mode — this skill won&apos;t be saved
+                    </p>
+                    <p className="text-xs text-amber-700">
+                      Sign in with your .gov.sg email to upload skills to the
+                      library.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className="flex justify-end gap-3 pt-1">
                 <button
@@ -672,18 +711,28 @@ export default function AddSkillModal({
                 >
                   Cancel
                 </button>
-                <button
-                  onClick={handleConfirm}
-                  disabled={uploading}
-                  className="px-5 py-2 bg-teal-600 hover:bg-teal-700 disabled:bg-teal-400 text-white text-sm font-semibold rounded-lg transition flex items-center gap-2"
-                >
-                  {uploading ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : (
+                {demoMode ? (
+                  <a
+                    href="/login"
+                    className="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg transition flex items-center gap-2"
+                  >
                     <Upload size={14} />
-                  )}
-                  Confirm & Upload
-                </button>
+                    Sign in to upload
+                  </a>
+                ) : (
+                  <button
+                    onClick={handleConfirm}
+                    disabled={uploading}
+                    className="px-5 py-2 bg-teal-600 hover:bg-teal-700 disabled:bg-teal-400 text-white text-sm font-semibold rounded-lg transition flex items-center gap-2"
+                  >
+                    {uploading ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <Upload size={14} />
+                    )}
+                    Confirm & Upload
+                  </button>
+                )}
               </div>
             </div>
           )}
